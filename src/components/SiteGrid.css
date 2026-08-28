@@ -1,0 +1,80 @@
+.apple-site-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  gap: 1.25rem;
+  margin-bottom: 3.5rem;
+  width: 100%;
+}
+
+/* Apple 风格空状态 */
+.apple-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4.5rem 1.5rem;
+  text-align: center;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  margin-bottom: 3.5rem;
+  width: 100%;
+}
+
+.empty-glyph-box {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-pill);
+  background-color: var(--bg-surface-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1rem;
+  color: var(--text-tertiary);
+}
+
+.empty-glyph-box svg {
+  width: 22px;
+  height: 22px;
+}
+
+.empty-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  letter-spacing: -0.015em;
+  margin-bottom: 0.35rem;
+}
+
+.empty-subtitle {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+}
+
+.empty-reset-action {
+  padding: 0.55rem 1.25rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #ffffff;
+  background-color: var(--accent-color);
+  border-radius: var(--radius-pill);
+  transition: var(--transition-fast);
+}
+
+.empty-reset-action:hover {
+  background-color: var(--accent-hover);
+  transform: scale(1.02);
+}
+
+.empty-reset-action:active {
+  transform: scale(0.98);
+}
+
+@media (max-width: 540px) {
+  .apple-site-grid {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
+}

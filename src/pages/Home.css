@@ -1,0 +1,31 @@
+.apple-home-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1.5rem 3rem 1.5rem;
+}
+
+.apple-home-content {
+  width: 100%;
+  max-width: 980px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.apple-footer {
+  margin-top: auto;
+  padding: 2.5rem 0 1rem 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  letter-spacing: -0.01em;
+  user-select: none;
+}
+
+@media (max-width: 640px) {
+  .apple-home-wrapper {
+    padding: 0 1rem 2rem 1rem;
+  }
+}

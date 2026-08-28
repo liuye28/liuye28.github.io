@@ -1,0 +1,218 @@
+/* ==========================================================================
+   Apple HIG 通用 UI 控件原子样式库 (Shared UI Controls)
+   ========================================================================== */
+
+/* 通用容器面板 */
+.apple-panel {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1.5rem;
+  transition: var(--transition-normal);
+}
+
+/* 输入框与文本域 */
+.apple-input {
+  width: 100%;
+  height: 42px;
+  padding: 0 0.9rem;
+  font-size: 0.95rem;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  outline: none;
+  transition: var(--transition-fast);
+}
+
+.apple-input:focus {
+  background-color: var(--bg-surface);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.apple-textarea {
+  width: 100%;
+  padding: 0.85rem;
+  font-size: 0.9rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  color: var(--text-primary);
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  outline: none;
+  resize: vertical;
+  line-height: 1.55;
+  transition: var(--transition-fast);
+}
+
+.apple-textarea:focus {
+  background-color: var(--bg-surface);
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+.apple-select {
+  height: 42px;
+  padding: 0 2.2rem 0 0.9rem;
+  font-size: 0.9rem;
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2386868b'%3E%3Cpath fill-rule='evenodd' d='M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z' clip-rule='evenodd'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.7rem center;
+  background-size: 1.1rem;
+  transition: var(--transition-fast);
+}
+
+.apple-select:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-light);
+}
+
+/* 按钮体系 */
+.apple-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  height: 38px;
+  padding: 0 1.1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: var(--radius-pill);
+  transition: var(--transition-fast);
+  user-select: none;
+  white-space: nowrap;
+}
+
+.apple-btn-primary {
+  background-color: var(--accent-color);
+  color: #ffffff;
+}
+
+.apple-btn-primary:hover {
+  background-color: var(--accent-hover);
+  transform: scale(1.02);
+}
+
+.apple-btn-primary:active {
+  transform: scale(0.98);
+}
+
+.apple-btn-secondary {
+  background-color: var(--bg-surface-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-subtle);
+}
+
+.apple-btn-secondary:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--border-hover);
+  transform: scale(1.02);
+}
+
+.apple-btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.apple-btn-ghost {
+  background-color: transparent;
+  color: var(--text-secondary);
+}
+
+.apple-btn-ghost:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.apple-btn-sm {
+  height: 30px;
+  padding: 0 0.75rem;
+  font-size: 0.8rem;
+}
+
+/* 错误与警告提示条 (温和 Apple 风格) */
+.apple-error-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  background-color: rgba(255, 69, 58, 0.1);
+  border: 1px solid rgba(255, 69, 58, 0.25);
+  color: #ff453a;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  margin-top: 0.75rem;
+}
+
+.apple-error-box svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* 单宽字体代码与结果展示区 */
+.apple-code-view {
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.875rem;
+  color: var(--text-primary);
+  line-height: 1.6;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* 胶囊微标 */
+.apple-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: var(--radius-pill);
+  background-color: var(--bg-surface-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+}
+
+/* 复制按钮 */
+.apple-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: var(--radius-pill);
+  background-color: var(--bg-surface-secondary);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  transition: var(--transition-fast);
+}
+
+.apple-copy-btn:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-hover);
+}
+
+.apple-copy-btn.copied {
+  background-color: rgba(52, 199, 89, 0.15);
+  color: #34c759;
+  border-color: rgba(52, 199, 89, 0.3);
+}

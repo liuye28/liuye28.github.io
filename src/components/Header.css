@@ -1,0 +1,126 @@
+.apple-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 3rem 0 2rem 0;
+  width: 100%;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.header-title-link {
+  display: inline-block;
+  transition: opacity 0.2s var(--ease-apple);
+}
+
+.header-title-link:hover {
+  opacity: 0.8;
+}
+
+.header-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--text-primary);
+  line-height: 1;
+  font-family: var(--font-sans);
+  user-select: none;
+}
+
+/* 顶部中间 Apple 分段路由导航条 */
+.header-nav-segmented {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background-color: var(--bg-surface-secondary);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--border-subtle);
+  user-select: none;
+}
+
+.header-nav-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: var(--radius-pill);
+  transition: var(--transition-fast);
+  text-decoration: none;
+}
+
+.header-nav-item:hover {
+  color: var(--text-primary);
+}
+
+.header-nav-item.active {
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: var(--shadow-sm);
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.theme-control-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-pill);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-subtle);
+  box-shadow: var(--shadow-sm);
+  transition: var(--transition-fast);
+}
+
+.theme-control-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-surface-secondary);
+  transform: scale(1.04);
+}
+
+.theme-control-btn:active {
+  transform: scale(0.96);
+}
+
+.theme-icon {
+  width: 17px;
+  height: 17px;
+  transition: transform 0.4s var(--ease-apple);
+}
+
+.sun-icon {
+  color: #ff9f0a;
+}
+
+.moon-icon {
+  color: var(--accent-color);
+}
+
+@media (max-width: 640px) {
+  .apple-header {
+    padding: 2rem 0 1.5rem 0;
+    gap: 0.5rem;
+  }
+
+  .header-title {
+    font-size: 1.75rem;
+  }
+
+  .header-nav-item {
+    padding: 4px 10px;
+    font-size: 0.8rem;
+  }
+}

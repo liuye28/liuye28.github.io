@@ -1,0 +1,132 @@
+/* ==========================================================================
+   Ozon 跨境电商工具专属样式 (Ozon Tools UI)
+   ========================================================================== */
+
+/* 卖点区块编辑卡片 */
+.ozon-block-card {
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 1.1rem;
+  margin-bottom: 0.85rem;
+  position: relative;
+  transition: var(--transition-fast);
+}
+
+.ozon-block-card:hover {
+  border-color: var(--border-hover);
+}
+
+.ozon-block-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.75rem;
+}
+
+.ozon-block-index {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--accent-color);
+  background-color: var(--accent-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+}
+
+.ozon-block-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  transition: var(--transition-fast);
+  padding: 2px 6px;
+  border-radius: var(--radius-xs);
+}
+
+.ozon-block-delete-btn:hover {
+  color: #ff453a;
+  background-color: rgba(255, 69, 58, 0.1);
+}
+
+/* 尺码表可视化预览 HTML 表格 */
+.ozon-table-preview-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  margin-bottom: 1.25rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.ozon-table-title {
+  padding: 0.85rem 1.1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-subtle);
+  background-color: var(--bg-surface-secondary);
+}
+
+.ozon-preview-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.ozon-preview-table th,
+.ozon-preview-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+
+.ozon-preview-table tr:last-child td,
+.ozon-preview-table tr:last-child th {
+  border-bottom: none;
+}
+
+.ozon-preview-table tr td:last-child,
+.ozon-preview-table tr th:last-child {
+  border-right: none;
+}
+
+.ozon-table-row:nth-child(even) {
+  background-color: rgba(0, 0, 0, 0.015);
+}
+
+html[data-theme='dark'] .ozon-table-row:nth-child(even) {
+  background-color: rgba(255, 255, 255, 0.02);
+}
+
+.ozon-row-label-cell {
+  background-color: var(--bg-surface-secondary);
+  min-width: 160px;
+  font-weight: 600;
+}
+
+.ozon-main-label {
+  display: block;
+  color: var(--text-primary);
+  font-size: 0.875rem;
+  line-height: 1.3;
+}
+
+.ozon-sub-label {
+  display: block;
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  font-weight: 400;
+  margin-top: 2px;
+  line-height: 1.2;
+}
+
+.ozon-val-cell {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--text-primary);
+  text-align: center;
+  min-width: 60px;
+}

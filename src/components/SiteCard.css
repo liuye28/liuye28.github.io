@@ -1,0 +1,128 @@
+.apple-site-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.25rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.25s var(--ease-apple), box-shadow 0.25s var(--ease-apple),
+    border-color 0.25s var(--ease-apple), background-color 0.25s var(--ease-apple);
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.apple-site-card:hover {
+  transform: translateY(-4px) scale(1.01);
+  box-shadow: var(--shadow-card-hover);
+  border-color: var(--border-hover);
+}
+
+.apple-site-card:active {
+  transform: translateY(-1px) scale(0.99);
+}
+
+.card-top-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 0.85rem;
+}
+
+/* Apple Squircle App Icon 容器 */
+.app-icon-container {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.25s var(--ease-apple);
+}
+
+.apple-site-card:hover .app-icon-container {
+  transform: scale(1.06);
+}
+
+.app-icon {
+  width: 26px;
+  height: 26px;
+  object-fit: contain;
+}
+
+.app-icon-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1.15rem;
+  color: var(--accent-color);
+  background: var(--accent-light);
+  font-family: var(--font-sans);
+}
+
+.card-header-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.name-and-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.app-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+.arrow-glyph {
+  width: 14px;
+  height: 14px;
+  color: var(--text-tertiary);
+  opacity: 0.4;
+  transition: var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.apple-site-card:hover .arrow-glyph {
+  opacity: 1;
+  color: var(--accent-color);
+  transform: translate(2px, -2px);
+}
+
+.app-category-tag {
+  display: inline-block;
+  font-size: 0.725rem;
+  color: var(--text-secondary);
+  margin-top: 3px;
+  font-weight: 400;
+}
+
+.app-description {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
