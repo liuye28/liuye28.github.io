@@ -95,10 +95,7 @@ export default function ToolsHome() {
         <Header />
 
         <div className="tools-hero-section">
-          <h2 className="tools-hero-title">开发者与跨境工具箱</h2>
-          <p className="tools-hero-subtitle">
-            轻量、纯粹、无服务器端依赖的日常开发与 Ozon 电商刊登提效工具集
-          </p>
+          <h2 className="tools-hero-title">开发者工具</h2>
         </div>
 
         <section className="tools-card-grid" aria-label="工具列表">
