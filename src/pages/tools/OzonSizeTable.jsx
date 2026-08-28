@@ -23,7 +23,9 @@ const INT_TO_RU_MAP = {
   '2XL': '52',
   'XXXL': '54',
   '3XL': '54',
-  '4XL': '56'
+  '4XL': '56',
+  '5XL': '58',
+  '6XL': '60'
 };
 
 /**
@@ -96,20 +98,23 @@ function splitLineIntoCells(line) {
   const cleanLine = line.replace(/\u00A0/g, ' ').trim();
 
   if (cleanLine.includes('\t')) {
-    return cleanLine.split('\t').map((c) => c.trim()).filter(Boolean);
+    return cleanLine.split('\t').map((c) => c.trim());
   }
   if (cleanLine.includes('|')) {
     const parts = cleanLine.split('|').map((c) => c.trim());
-    return parts.filter((c, idx) => {
-      if ((idx === 0 || idx === parts.length - 1) && !c) return false;
-      return true;
-    });
+    if (parts.length > 0 && parts[0] === '') {
+      parts.shift();
+    }
+    if (parts.length > 0 && parts[parts.length - 1] === '') {
+      parts.pop();
+    }
+    return parts;
   }
   if (/\s{2,}/.test(cleanLine)) {
-    return cleanLine.split(/\s{2,}/).map((c) => c.trim()).filter(Boolean);
+    return cleanLine.split(/\s{2,}/).map((c) => c.trim());
   }
   if (cleanLine.includes(',')) {
-    return cleanLine.split(',').map((c) => c.trim()).filter(Boolean);
+    return cleanLine.split(',').map((c) => c.trim());
   }
   return [cleanLine];
 }
@@ -144,7 +149,7 @@ function parseAndStandardizeSizeTable(rawText, autoFourSizes = true, autoStandar
   if (rawRows.length === 0) return { finalRows: [], detectedMode: '' };
 
   // 1. 寻找尺码基准行
-  const KNOWN_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL', '42', '44', '46', '48', '50', '52', '54'];
+  const KNOWN_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', 'XXXL', '3XL', '4XL', '5XL', '6XL', '40', '42', '44', '46', '48', '50', '52', '54', '56', '58'];
   let headerRowIndex = 0;
   let maxScore = -1;
 
@@ -165,36 +170,94 @@ function parseAndStandardizeSizeTable(rawText, autoFourSizes = true, autoStandar
 
   const headerRow = rawRows[headerRowIndex];
   const sizeList = headerRow.values.map((s) => s.toUpperCase());
+  const dataRows = rawRows.filter((_, idx) => idx !== headerRowIndex);
 
-  // 4 尺码过滤逻辑 (优先 M~XXL, 次选 S~XL)
-  const targetGroup1 = ['M', 'L', 'XL', 'XXL'];
-  const targetGroup2 = ['S', 'M', 'L', 'XL'];
-
-  const hasGroup1 = targetGroup1.map((s) => sizeList.indexOf(s)).every((idx) => idx !== -1);
-  const hasGroup2 = targetGroup2.map((s) => sizeList.indexOf(s)).every((idx) => idx !== -1);
+  // 对齐数据行长度，避免越界访问为 undefined
+  dataRows.forEach((row) => {
+    while (row.values.length < headerRow.values.length) {
+      row.values.push('');
+    }
+  });
 
   let targetIndices = [];
   let selectedSizes = [];
   let detectedMode = '';
 
-  if (autoFourSizes) {
-    if (hasGroup1) {
-      targetIndices = targetGroup1.map((s) => sizeList.indexOf(s));
-      selectedSizes = targetGroup1;
-      detectedMode = '已标准化: M, L, XL, XXL (自动生成 RU + INT 双尺码)';
-    } else if (hasGroup2) {
-      targetIndices = targetGroup2.map((s) => sizeList.indexOf(s));
-      selectedSizes = targetGroup2;
-      detectedMode = '已标准化: S, M, L, XL (自动生成 RU + INT 双尺码)';
+  // 4 尺码智能优选逻辑（基于数据行的实际填充率与完整度）
+  if (autoFourSizes && sizeList.length > 4) {
+    const candidateGroups = [];
+
+    // 预设常见标准 4 尺码组
+    const PRESET_GROUPS = [
+      { sizes: ['M', 'L', 'XL', 'XXL'], bonus: 0.2 },
+      { sizes: ['S', 'M', 'L', 'XL'], bonus: 0.15 },
+      { sizes: ['L', 'XL', '2XL', '3XL'], bonus: 0.1 },
+      { sizes: ['L', 'XL', 'XXL', 'XXXL'], bonus: 0.1 },
+      { sizes: ['XS', 'S', 'M', 'L'], bonus: 0.05 }
+    ];
+
+    PRESET_GROUPS.forEach((preset) => {
+      const indices = preset.sizes.map((s) => sizeList.indexOf(s));
+      if (indices.every((idx) => idx !== -1)) {
+        candidateGroups.push({
+          indices,
+          sizes: preset.sizes,
+          bonus: preset.bonus
+        });
+      }
+    });
+
+    // 滑动窗口：所有连续 4 尺码窗口
+    for (let i = 0; i <= sizeList.length - 4; i++) {
+      const indices = [i, i + 1, i + 2, i + 3];
+      const sizes = indices.map((idx) => sizeList[idx]);
+      const alreadyExists = candidateGroups.some((c) => c.indices.join(',') === indices.join(','));
+      if (!alreadyExists) {
+        candidateGroups.push({
+          indices,
+          sizes,
+          bonus: 0
+        });
+      }
+    }
+
+    // 计算各候选组的有效数据填充率
+    let bestCandidate = null;
+    let highestScore = -1;
+
+    candidateGroups.forEach((cand) => {
+      let validCount = 0;
+      dataRows.forEach((row) => {
+        cand.indices.forEach((colIdx) => {
+          const val = row.values[colIdx];
+          if (val !== undefined && val !== '' && val !== null) {
+            validCount++;
+          }
+        });
+      });
+
+      const totalScore = validCount + (cand.bonus || 0);
+      if (totalScore > highestScore) {
+        highestScore = totalScore;
+        bestCandidate = cand;
+      }
+    });
+
+    if (bestCandidate) {
+      targetIndices = bestCandidate.indices;
+      selectedSizes = targetIndices.map((i) => headerRow.values[i].toUpperCase());
+      detectedMode = `智能优选 4 尺码: ${selectedSizes.join(', ')} (数据完整度最高)`;
     } else {
-      targetIndices = headerRow.values.length > 4 ? [0, 1, 2, 3] : headerRow.values.map((_, i) => i);
+      targetIndices = [0, 1, 2, 3];
       selectedSizes = targetIndices.map((i) => headerRow.values[i].toUpperCase());
       detectedMode = `已保留 4 个尺码: ${selectedSizes.join(', ')}`;
     }
   } else {
     targetIndices = headerRow.values.map((_, i) => i);
     selectedSizes = headerRow.values.map((s) => s.toUpperCase());
-    detectedMode = '保留原始所有尺码列';
+    detectedMode = sizeList.length <= 4 
+      ? `已识别 ${sizeList.length} 个尺码: ${selectedSizes.join(', ')}` 
+      : `保留全部 ${sizeList.length} 个尺码: ${selectedSizes.join(', ')}`;
   }
 
   // 构建最终标准行
@@ -313,7 +376,15 @@ export default function OzonSizeTable() {
                 checked={autoStandardize}
                 onChange={() => setAutoStandardize(!autoStandardize)}
               />
-              <span>自动净化中文为纯俄文规范 (RU+INT)</span>
+              <span>自动净化中文 (RU+INT)</span>
+            </label>
+            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.825rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={autoFourSizes}
+                onChange={() => setAutoFourSizes(!autoFourSizes)}
+              />
+              <span>智能提取 4 个核心尺码</span>
             </label>
             <button
               type="button"

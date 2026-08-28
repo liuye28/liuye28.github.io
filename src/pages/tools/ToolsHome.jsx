@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../components/Header';
 import { tools } from '../../data/tools';
@@ -89,6 +89,13 @@ function ToolIcon({ type }) {
  * 小工具板块首页
  */
 export default function ToolsHome() {
+  const [keyword, setKeyword] = useState('');
+
+  // 根据关键词过滤工具列表（按名称模糊匹配，忽略大小写）
+  const filteredTools = tools.filter((tool) =>
+    tool.name.toLowerCase().includes(keyword.trim().toLowerCase())
+  );
+
   return (
     <main className="apple-home-wrapper">
       <div className="apple-home-content">
@@ -98,35 +105,74 @@ export default function ToolsHome() {
           <h2 className="tools-hero-title">开发者工具</h2>
         </div>
 
+        {/* 搜索框 */}
+        <div className="tools-search-bar">
+          <svg
+            className="tools-search-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input
+            className="tools-search-input"
+            type="text"
+            placeholder="搜索工具名称…"
+            value={keyword}
+            onChange={(e) => setKeyword(e.target.value)}
+          />
+          {keyword && (
+            <button
+              className="tools-search-clear"
+              onClick={() => setKeyword('')}
+              aria-label="清除搜索"
+            >
+              ×
+            </button>
+          )}
+        </div>
+
         <section className="tools-card-grid" aria-label="工具列表">
-          {tools.map((tool) => (
-            <Link key={tool.id} to={tool.path} className="tool-card-item">
-              <div className="tool-card-top">
-                <div className="tool-icon-box" aria-hidden="true">
-                  <ToolIcon type={tool.iconType} />
-                </div>
-                <div className="tool-card-header-info">
-                  <div className="tool-name-arrow">
-                    <h3 className="tool-name">{tool.name}</h3>
-                    <svg
-                      className="tool-arrow"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                    >
-                      <polyline points="9 18 15 12 9 6" />
-                    </svg>
+          {filteredTools.length > 0 ? (
+            filteredTools.map((tool) => (
+              <Link key={tool.id} to={tool.path} className="tool-card-item">
+                <div className="tool-card-top">
+                  <div className="tool-icon-box" aria-hidden="true">
+                    <ToolIcon type={tool.iconType} />
                   </div>
-                  <span className="tool-tag">{tool.category}</span>
+                  <div className="tool-card-header-info">
+                    <div className="tool-name-arrow">
+                      <h3 className="tool-name">{tool.name}</h3>
+                      <svg
+                        className="tool-arrow"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </div>
+                    <span className="tool-tag">{tool.category}</span>
+                  </div>
                 </div>
-              </div>
-              <p className="tool-desc">{tool.desc}</p>
-            </Link>
-          ))}
+                <p className="tool-desc">{tool.desc}</p>
+              </Link>
+            ))
+          ) : (
+            <div className="tools-empty-hint">
+              <p>没有找到匹配「{keyword.trim()}」的工具</p>
+            </div>
+          )}
         </section>
 
         <footer className="apple-footer">
