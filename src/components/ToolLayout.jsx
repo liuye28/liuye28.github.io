@@ -43,7 +43,7 @@ export default function ToolLayout({ title, desc, children }) {
         <div className="tool-page-body">{children}</div>
 
         <footer className="apple-footer">
-          <p>Ly • Developer Tools</p>
+          <p>Ly</p>
         </footer>
       </div>
     </main>

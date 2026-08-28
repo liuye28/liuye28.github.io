@@ -8,8 +8,16 @@ import './SearchBar.css';
  * @param {string} props.keyword 搜索关键词
  * @param {function} props.onChange 搜索词变化回调
  * @param {function} props.onClear 清空搜索词回调
+ * @param {string} [props.placeholder] 搜索框占位文本
+ * @param {string} [props.ariaLabel] 无障碍标签
  */
-export default function SearchBar({ keyword, onChange, onClear }) {
+export default function SearchBar({
+  keyword,
+  onChange,
+  onClear,
+  placeholder = '搜索或输入网址...',
+  ariaLabel = '搜索网站'
+}) {
   const inputRef = useRef(null);
 
   // 绑定全局快捷键 ⌘K / Ctrl+K 快速聚焦搜索栏
@@ -55,11 +63,11 @@ export default function SearchBar({ keyword, onChange, onClear }) {
           ref={inputRef}
           type="text"
           className="spotlight-input"
-          placeholder="搜索或输入网址..."
+          placeholder={placeholder}
           value={keyword}
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          aria-label="搜索网站"
+          aria-label={ariaLabel}
           autoComplete="off"
           spellCheck="false"
         />

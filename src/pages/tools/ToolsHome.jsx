@@ -1,7 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../components/Header';
-import { tools } from '../../data/tools';
+import SearchBar from '../../components/SearchBar';
+import CategoryTabs from '../../components/CategoryTabs';
+import { tools, toolCategories } from '../../data/tools';
 import './ToolsHome.css';
 
 /**
@@ -90,57 +92,63 @@ function ToolIcon({ type }) {
  */
 export default function ToolsHome() {
   const [keyword, setKeyword] = useState('');
+  const [activeCategory, setActiveCategory] = useState('全部');
 
-  // 根据关键词过滤工具列表（按名称模糊匹配，忽略大小写）
-  const filteredTools = tools.filter((tool) =>
-    tool.name.toLowerCase().includes(keyword.trim().toLowerCase())
-  );
+  // 统计各分类小工具数量
+  const categoryCounts = useMemo(() => {
+    const counts = { 全部: tools.length };
+    toolCategories.forEach((cat) => {
+      if (cat !== '全部') {
+        counts[cat] = tools.filter((tool) => tool.category === cat).length;
+      }
+    });
+    return counts;
+  }, []);
+
+  // 综合分类与关键词过滤
+  const filteredTools = useMemo(() => {
+    return tools.filter((tool) => {
+      const matchesCategory =
+        activeCategory === '全部' || tool.category === activeCategory;
+
+      const cleanKeyword = keyword.trim().toLowerCase();
+      const matchesSearch =
+        !cleanKeyword ||
+        tool.name.toLowerCase().includes(cleanKeyword) ||
+        (tool.desc && tool.desc.toLowerCase().includes(cleanKeyword));
+
+      return matchesCategory && matchesSearch;
+    });
+  }, [keyword, activeCategory]);
+
+  const handleResetFilter = () => {
+    setKeyword('');
+    setActiveCategory('全部');
+  };
 
   return (
     <main className="apple-home-wrapper">
       <div className="apple-home-content">
         <Header />
 
-        <div className="tools-hero-section">
-          <h2 className="tools-hero-title">开发者工具</h2>
-        </div>
+        <SearchBar
+          keyword={keyword}
+          onChange={setKeyword}
+          onClear={() => setKeyword('')}
+          placeholder="搜索小工具名称或功能描述..."
+          ariaLabel="搜索小工具"
+        />
 
-        {/* 搜索框 */}
-        <div className="tools-search-bar">
-          <svg
-            className="tools-search-icon"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-          >
-            <circle cx="11" cy="11" r="8" />
-            <line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            className="tools-search-input"
-            type="text"
-            placeholder="搜索工具名称…"
-            value={keyword}
-            onChange={(e) => setKeyword(e.target.value)}
-          />
-          {keyword && (
-            <button
-              className="tools-search-clear"
-              onClick={() => setKeyword('')}
-              aria-label="清除搜索"
-            >
-              ×
-            </button>
-          )}
-        </div>
+        <CategoryTabs
+          categories={toolCategories}
+          activeCategory={activeCategory}
+          onSelectCategory={setActiveCategory}
+          categoryCounts={categoryCounts}
+        />
 
-        <section className="tools-card-grid" aria-label="工具列表">
-          {filteredTools.length > 0 ? (
-            filteredTools.map((tool) => (
+        {filteredTools.length > 0 ? (
+          <section className="tools-card-grid" aria-label="工具列表">
+            {filteredTools.map((tool) => (
               <Link key={tool.id} to={tool.path} className="tool-card-item">
                 <div className="tool-card-top">
                   <div className="tool-icon-box" aria-hidden="true">
@@ -167,16 +175,37 @@ export default function ToolsHome() {
                 </div>
                 <p className="tool-desc">{tool.desc}</p>
               </Link>
-            ))
-          ) : (
-            <div className="tools-empty-hint">
-              <p>没有找到匹配「{keyword.trim()}」的工具</p>
+            ))}
+          </section>
+        ) : (
+          <div className="apple-empty-state">
+            <div className="empty-glyph-box" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <line x1="21" y1="21" x2="16.65" y2="16.65" />
+              </svg>
             </div>
-          )}
-        </section>
+            <p className="empty-title">无匹配小工具</p>
+            <p className="empty-subtitle">未找到相匹配的工具或分类项目</p>
+            <button
+              type="button"
+              className="empty-reset-action"
+              onClick={handleResetFilter}
+            >
+              还原全部工具
+            </button>
+          </div>
+        )}
 
         <footer className="apple-footer">
-          <p>Ly • Developer & E-Commerce Tools</p>
+          <p>Ly</p>
         </footer>
       </div>
     </main>

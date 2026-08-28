@@ -329,7 +329,7 @@ function buildOzonSizeJson(rows) {
  * Ozon 尺码表生成器页面
  */
 export default function OzonSizeTable() {
-  const [rawText, setRawText] = useState(SAMPLE_SIZE_TABLE);
+  const [rawText, setRawText] = useState('');
   const [autoFourSizes, setAutoFourSizes] = useState(true);
   const [autoStandardize, setAutoStandardize] = useState(true);
   const [copied, setCopied] = useState(false);
