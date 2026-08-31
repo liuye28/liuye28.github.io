@@ -8,6 +8,7 @@ import RegexTester from './pages/tools/RegexTester';
 import BaseConvert from './pages/tools/BaseConvert';
 import Codec from './pages/tools/Codec';
 import HashGenerator from './pages/tools/HashGenerator';
+import CodePad from './pages/tools/CodePad';
 import OzonRichContent from './pages/tools/OzonRichContent';
 import OzonSizeTable from './pages/tools/OzonSizeTable';
 
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/tools/ozon-size" element={<OzonSizeTable />} />
 
         {/* 开发者实用通用工具 */}
+        <Route path="/tools/code-pad" element={<CodePad />} />
         <Route path="/tools/timestamp" element={<Timestamp />} />
         <Route path="/tools/json" element={<JsonFormatter />} />
         <Route path="/tools/regex" element={<RegexTester />} />
