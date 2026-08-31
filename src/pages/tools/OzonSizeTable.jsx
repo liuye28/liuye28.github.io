@@ -10,23 +10,145 @@ const SAMPLE_SIZE_TABLE = `Параметр \\ Размер | S | M | L | XL
 Длина рукава (袖长) | 54 | 55 | 56 | 57`;
 
 /**
- * 国际尺码 -> 俄罗斯尺码标准对照表
+ * 国际尺码 / 别名 -> 俄罗斯尺码标准基础对照表（包含大码、超大码与各种别名）
  */
-const INT_TO_RU_MAP = {
+const BASE_INT_TO_RU_MAP = {
+  // 小码 / 超小码
+  '5XS': '34',
+  'XXXXXS': '34',
+  '4XS': '36',
+  'XXXXS': '36',
+  '3XS': '38',
+  'XXXS': '38',
+  '2XS': '40',
   'XXS': '40',
   'XS': '42',
   'S': '44',
   'M': '46',
   'L': '48',
+  // 大码 / 超大码（支持 XL/1XL/1X 到 15XL/15X）
   'XL': '50',
+  '1XL': '50',
+  '1X': '50',
   'XXL': '52',
   '2XL': '52',
+  '2X': '52',
   'XXXL': '54',
   '3XL': '54',
+  '3X': '54',
+  'XXXXL': '56',
   '4XL': '56',
+  '4X': '56',
+  'XXXXXL': '58',
   '5XL': '58',
-  '6XL': '60'
+  '5X': '58',
+  'XXXXXXL': '60',
+  '6XL': '60',
+  '6X': '60',
+  '7XL': '62',
+  '7X': '62',
+  '8XL': '64',
+  '8X': '64',
+  '9XL': '66',
+  '9X': '66',
+  '10XL': '68',
+  '10X': '68',
+  '11XL': '70',
+  '11X': '70',
+  '12XL': '72',
+  '12X': '72',
+  '13XL': '74',
+  '13X': '74',
+  '14XL': '76',
+  '14X': '76',
+  '15XL': '78',
+  '15X': '78'
 };
+
+/**
+ * 动态根据国际尺码获取俄罗斯尺码 (支持任意大码如 1XL-20XL, 1X-20X, XXXXL 等)
+ */
+function getRuSizeFromInt(sizeStr) {
+  if (!sizeStr) return null;
+  const s = String(sizeStr).trim().toUpperCase();
+  if (BASE_INT_TO_RU_MAP[s]) {
+    return BASE_INT_TO_RU_MAP[s];
+  }
+  // 匹配 NxL / Nx (例如 16XL, 20XL, 16X 等)
+  const nxlMatch = s.match(/^(\d+)X[L]?$/);
+  if (nxlMatch) {
+    const n = parseInt(nxlMatch[1], 10);
+    if (n >= 1) {
+      return String(50 + (n - 1) * 2);
+    }
+  }
+  // 匹配连续 X + L (如 XXXXXXXL)
+  const multiXMatch = s.match(/^(X+)L$/);
+  if (multiXMatch) {
+    const count = multiXMatch[1].length;
+    return String(50 + (count - 1) * 2);
+  }
+  // 匹配连续 X + S (如 XXXS)
+  const multiXsMatch = s.match(/^(X+)S$/);
+  if (multiXsMatch) {
+    const count = multiXsMatch[1].length;
+    return String(44 - count * 2);
+  }
+  return null;
+}
+
+/**
+ * 俄罗斯尺码 -> 国际码对照与动态推导
+ */
+function getIntSizeFromRu(sizeStr) {
+  if (!sizeStr) return null;
+  const s = String(sizeStr).trim();
+  const num = parseInt(s, 10);
+  if (isNaN(num)) return null;
+
+  const RU_TO_INT_DIRECT = {
+    34: '5XS',
+    36: '4XS',
+    38: '3XS',
+    40: 'XXS',
+    42: 'XS',
+    44: 'S',
+    46: 'M',
+    48: 'L',
+    50: 'XL',
+    52: '2XL',
+    54: '3XL',
+    56: '4XL',
+    58: '5XL',
+    60: '6XL',
+    62: '7XL',
+    64: '8XL',
+    66: '9XL',
+    68: '10XL',
+    70: '11XL',
+    72: '12XL',
+    74: '13XL',
+    76: '14XL',
+    78: '15XL'
+  };
+
+  if (RU_TO_INT_DIRECT[num]) {
+    return RU_TO_INT_DIRECT[num];
+  }
+  if (num > 78 && num % 2 === 0) {
+    const n = Math.floor((num - 50) / 2) + 1;
+    return `${n}XL`;
+  }
+  return null;
+}
+
+/**
+ * 校验是否为已知尺码 token
+ */
+function isRecognizedSize(sizeStr) {
+  if (!sizeStr) return false;
+  return Boolean(getRuSizeFromInt(sizeStr) || getIntSizeFromRu(sizeStr));
+}
 
 /**
  * 常见服装测量维度映射标准 (自动净化中文和括号说明)
@@ -34,7 +156,7 @@ const INT_TO_RU_MAP = {
 const STANDARD_PARAMS = [
   { test: /(前衣长|前长|длина\s*спереди)/i, standard: 'Длина спереди, см' },
   { test: /(后衣长|后长|длина\s*сзади)/i, standard: 'Длина сзади, см' },
-  { test: /(衣长|通长|длина\s*изделия)/i, standard: 'Длина изделия, см' },
+  { test: /(衣长|通长|总长|длина\s*изделия)/i, standard: 'Длина изделия, см' },
   { test: /(领宽|领围|ширина\s*горловины)/i, standard: 'Ширина горловины, см' },
   { test: /(肩宽|ширина\s*плеч)/i, standard: 'Ширина плеч, см' },
   { test: /(胸围|обхват\s*груди)/i, standard: 'Обхват груди, см' },
@@ -47,6 +169,9 @@ const STANDARD_PARAMS = [
   { test: /(裙长|длина\s*юбки)/i, standard: 'Длина юбки, см' },
   { test: /(裤长|длина\s*брюк)/i, standard: 'Длина брюк, см' },
   { test: /(大腿围|обхват\s*бедра)/i, standard: 'Обхват бедра, см' },
+  { test: /(脚口|裤脚|裤口|обхват\s*штанины|низ\s*брюк)/i, standard: 'Обхват низа брючины, см' },
+  { test: /(档长|前裆|后裆|высота\s*посадки)/i, standard: 'Высота посадки, см' },
+  { test: /(克重|面料克重|плотность)/i, standard: 'Плотность, г/м²' },
   { test: /(身高|рост)/i, standard: 'Рост, см' },
   { test: /(体重|вес)/i, standard: 'Вес, кг' }
 ];
@@ -73,11 +198,11 @@ function cleanAndStandardizeLabel(rawLabel) {
     }
   }
 
-  // 如果不在标准字典中，剔除所有中文字符和括号
+  // 如果不在标准字典中，剔除所有中文字符和嵌套括号
   let cleaned = first
     .replace(/[\u4e00-\u9fa5]/g, '') // 剔除中文
-    .replace(/\(.*?\)/g, '') // 剔除半角括号内容
-    .replace(/（.*?）/g, '') // 剔除全角括号内容
+    .replace(/（[^（）]*）/g, '') // 剔除全角括号
+    .replace(/\([^()]*\)/g, '') // 剔除半角括号
     .replace(/[()（）]/g, '')
     .trim();
 
@@ -149,18 +274,17 @@ function parseAndStandardizeSizeTable(rawText, autoFourSizes = true, autoStandar
   if (rawRows.length === 0) return { finalRows: [], detectedMode: '' };
 
   // 1. 寻找尺码基准行
-  const KNOWN_SIZES = ['XXS', 'XS', 'S', 'M', 'L', 'XL', 'XXL', '2XL', 'XXXL', '3XL', '4XL', '5XL', '6XL', '40', '42', '44', '46', '48', '50', '52', '54', '56', '58'];
   let headerRowIndex = 0;
   let maxScore = -1;
 
   rawRows.forEach((row, idx) => {
     let score = 0;
     const l = row.rawLabel.toUpperCase();
-    if (l.includes('РАЗМЕР') || l.includes('INT') || l.includes('RU') || l.includes('尺码') || l.includes('SIZE')) {
+    if (l.includes('РАЗМЕР') || l.includes('INT') || l.includes('RU') || l.includes('尺码') || l.includes('SIZE') || l.includes('码数') || l.includes('位置')) {
       score += 5;
     }
     row.values.forEach((v) => {
-      if (KNOWN_SIZES.includes(v.toUpperCase())) score += 3;
+      if (isRecognizedSize(v)) score += 3;
     });
     if (score > maxScore) {
       maxScore = score;
@@ -187,13 +311,21 @@ function parseAndStandardizeSizeTable(rawText, autoFourSizes = true, autoStandar
   if (autoFourSizes && sizeList.length > 4) {
     const candidateGroups = [];
 
-    // 预设常见标准 4 尺码组
+    // 预设常见标准 4 尺码组（包含常规码与常见大码组）
     const PRESET_GROUPS = [
       { sizes: ['M', 'L', 'XL', 'XXL'], bonus: 0.2 },
       { sizes: ['S', 'M', 'L', 'XL'], bonus: 0.15 },
-      { sizes: ['L', 'XL', '2XL', '3XL'], bonus: 0.1 },
+      { sizes: ['L', 'XL', '2XL', '3XL'], bonus: 0.13 },
+      { sizes: ['XL', '2XL', '3XL', '4XL'], bonus: 0.12 },
+      { sizes: ['1XL', '2XL', '3XL', '4XL'], bonus: 0.12 },
+      { sizes: ['2XL', '3XL', '4XL', '5XL'], bonus: 0.11 },
+      { sizes: ['3XL', '4XL', '5XL', '6XL'], bonus: 0.1 },
       { sizes: ['L', 'XL', 'XXL', 'XXXL'], bonus: 0.1 },
-      { sizes: ['XS', 'S', 'M', 'L'], bonus: 0.05 }
+      { sizes: ['XS', 'S', 'M', 'L'], bonus: 0.05 },
+      { sizes: ['46', '48', '50', '52'], bonus: 0.15 },
+      { sizes: ['48', '50', '52', '54'], bonus: 0.13 },
+      { sizes: ['50', '52', '54', '56'], bonus: 0.12 },
+      { sizes: ['52', '54', '56', '58'], bonus: 0.11 }
     ];
 
     PRESET_GROUPS.forEach((preset) => {
@@ -263,26 +395,44 @@ function parseAndStandardizeSizeTable(rawText, autoFourSizes = true, autoStandar
   // 构建最终标准行
   const finalRows = [];
 
-  // 如果开启了自动标准化，且基准行是国际码（如 S, M, L, XL），自动生成 RU + INT 两行官方标准表头
-  const isIntSizes = selectedSizes.every((s) => INT_TO_RU_MAP[s]);
+  // 判断选中的尺码类型：
+  // 1. 全部为国际码或大码别名（如 S, M, L, XL, 1XL, 2XL, 3XL, 4XL 等）
+  const allCanMapToRu = selectedSizes.length > 0 && selectedSizes.every((s) => Boolean(getRuSizeFromInt(s)));
+  // 2. 全部为俄罗斯数字码（如 44, 46, 48, 50, 52, 54, 56 等）
+  const allCanMapToInt = selectedSizes.length > 0 && selectedSizes.every((s) => Boolean(getIntSizeFromRu(s)));
 
-  if (autoStandardize && isIntSizes) {
-    // 1. RU 行
-    finalRows.push({
-      label: ['RU', 'Российский размер'],
-      values: selectedSizes.map((s) => INT_TO_RU_MAP[s] || s)
-    });
-    // 2. INT 行
-    finalRows.push({
-      label: ['INT', 'Международный размер'],
-      values: selectedSizes
-    });
+  const hasStandardizedHeader = autoStandardize && (allCanMapToRu || allCanMapToInt);
+
+  if (hasStandardizedHeader) {
+    if (allCanMapToRu) {
+      // 1. RU 行
+      finalRows.push({
+        label: ['RU', 'Российский размер'],
+        values: selectedSizes.map((s) => getRuSizeFromInt(s) || s)
+      });
+      // 2. INT 行
+      finalRows.push({
+        label: ['INT', 'Международный размер'],
+        values: selectedSizes
+      });
+    } else if (allCanMapToInt) {
+      // 1. RU 行
+      finalRows.push({
+        label: ['RU', 'Российский размер'],
+        values: selectedSizes
+      });
+      // 2. INT 行
+      finalRows.push({
+        label: ['INT', 'Международный размер'],
+        values: selectedSizes.map((s) => getIntSizeFromRu(s) || s)
+      });
+    }
   }
 
   // 遍历所有数据行
   rawRows.forEach((row, idx) => {
     // 如果这一行是尺码代号行且已经自动生成了 RU+INT，则跳过原始尺码行
-    if (idx === headerRowIndex && autoStandardize && isIntSizes) {
+    if (idx === headerRowIndex && hasStandardizedHeader) {
       return;
     }
 
