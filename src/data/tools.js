@@ -46,6 +46,14 @@ export const tools = [
     iconType: "codec"
   },
   {
+    id: "code-pad",
+    name: "代码练习板",
+    path: "/tools/code-pad",
+    desc: "专为手敲练习设计的轻量代码板，支持智能 Tab 缩进、回车继承对齐、双栏对照与防丢暂存",
+    category: "开发/调试",
+    iconType: "code"
+  },
+  {
     id: "timestamp",
     name: "时间戳转换器",
     path: "/tools/timestamp",
