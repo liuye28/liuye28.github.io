@@ -1,347 +1,425 @@
 /* ==========================================================================
-   代码练习板专属样式 (Code Scratchpad)
+   LeetCode 风格代码工作台样式 (Monaco Editor Powered)
    ========================================================================== */
 
-.codepad-container {
+.leetcode-workbench {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  background-color: #1a1a1a;
+  border: 1px solid #333333;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
   width: 100%;
+  min-height: 600px;
+  color: #d4d4d4;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  transition: all 0.25s ease;
 }
 
-/* 顶部操作控制栏 */
-.codepad-toolbar {
+/* 禅模式 (Zen Mode 网页沉浸全屏) */
+.leetcode-workbench.zen-mode {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  width: 100vw;
+  height: 100vh;
+  min-height: 100vh;
+  border-radius: 0;
+  border: none;
+  margin: 0;
+}
+
+/* 顶部 LeetCode 经典黑晶控制条 */
+.leetcode-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
-  padding: 0.65rem 1rem;
-  box-shadow: var(--shadow-sm);
-  flex-wrap: wrap;
-}
-
-.codepad-toolbar-left {
-  display: flex;
-  align-items: center;
   gap: 0.75rem;
+  padding: 0.5rem 0.85rem;
+  background-color: #262626;
+  border-bottom: 1px solid #383838;
   flex-wrap: wrap;
-}
-
-.codepad-toolbar-right {
-  display: flex;
-  align-items: center;
-  gap: 0.65rem;
-  flex-wrap: wrap;
-}
-
-.codepad-select-wrapper {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.codepad-label-inline {
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  white-space: nowrap;
-}
-
-.codepad-mini-select {
-  height: 32px;
-  padding: 0 1.8rem 0 0.65rem;
-  font-size: 0.8rem;
-  border-radius: var(--radius-sm);
-}
-
-/* 自动补全括号胶囊开关 */
-.codepad-toggle-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  height: 32px;
-  padding: 0 0.75rem;
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  background-color: var(--bg-surface-secondary);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-pill);
-  cursor: pointer;
-  transition: var(--transition-fast);
   user-select: none;
 }
 
-.codepad-toggle-btn:hover {
-  background-color: var(--bg-hover);
-  color: var(--text-primary);
-}
-
-.codepad-toggle-btn.active {
-  background-color: var(--accent-light);
-  border-color: var(--accent-color);
-  color: var(--accent-color);
-}
-
-.toggle-indicator {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: var(--text-tertiary);
-  transition: var(--transition-fast);
-}
-
-.codepad-toggle-btn.active .toggle-indicator {
-  background-color: var(--accent-color);
-  box-shadow: 0 0 6px var(--accent-color);
-}
-
-/* 字号微调控件 */
-.codepad-font-controls {
+.topbar-left,
+.topbar-right {
   display: flex;
   align-items: center;
-  background-color: var(--bg-surface-secondary);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-pill);
-  padding: 1px;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.codepad-icon-btn {
-  height: 28px;
-  padding: 0 0.55rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  border: none;
-  background: transparent;
-  border-radius: var(--radius-pill);
+.topbar-divider {
+  width: 1px;
+  height: 18px;
+  background-color: #404040;
+  margin: 0 0.25rem;
 }
 
-.codepad-icon-btn:hover {
-  background-color: var(--bg-hover);
-}
-
-.codepad-font-size-text {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  min-width: 36px;
-  text-align: center;
-}
-
-.codepad-clear-btn {
-  color: #ff453a !important;
-}
-
-.codepad-clear-btn:hover {
-  background-color: rgba(255, 69, 58, 0.1) !important;
-}
-
-/* 主工作区布局 (双栏 / 单栏) */
-.codepad-workspace {
-  display: grid;
-  gap: 1rem;
-  width: 100%;
-  min-height: 520px;
-  transition: var(--transition-normal);
-}
-
-.codepad-workspace.split-layout {
-  grid-template-columns: 1fr 1.25fr;
-}
-
-.codepad-workspace.single-layout {
-  grid-template-columns: 1fr;
-}
-
-@media (max-width: 900px) {
-  .codepad-workspace.split-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* 面板通用结构 */
-.codepad-pane {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.codepad-pane-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 1rem;
-  background-color: var(--bg-surface-secondary);
-  border-bottom: 1px solid var(--border-subtle);
-}
-
-.codepad-pane-title {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.codepad-autosave-badge {
-  font-size: 0.7rem;
-  font-weight: normal;
-  color: #34c759;
-  margin-left: 0.4rem;
-  opacity: 0.9;
-}
-
-.codepad-stats-info {
+/* 语言下拉与图标 */
+.leetcode-select-group {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: var(--text-tertiary);
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  background-color: #333333;
+  border: 1px solid #444444;
+  border-radius: 6px;
+  padding: 0 0.5rem;
+  height: 30px;
 }
 
-.stat-divider {
-  opacity: 0.5;
+.leetcode-top-icon {
+  width: 14px;
+  height: 14px;
+  color: #ffa116; /* LeetCode 经典活力橙 */
+  flex-shrink: 0;
 }
 
-.codepad-text-btn {
+.leetcode-lang-select {
   background: transparent;
   border: none;
-  font-size: 0.75rem;
-  color: var(--text-tertiary);
+  color: #f0f0f0;
+  font-size: 0.8rem;
+  font-weight: 500;
+  outline: none;
   cursor: pointer;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: var(--transition-fast);
+  padding-right: 0.5rem;
 }
 
-.codepad-text-btn:hover {
-  color: #ff453a;
-  background-color: rgba(255, 69, 58, 0.1);
+.leetcode-lang-select.mini {
+  background-color: #333333;
+  border: 1px solid #444444;
+  border-radius: 6px;
+  padding: 0 0.5rem;
+  height: 30px;
 }
 
-/* 左侧题目文本区 */
-.codepad-pane-content {
-  flex: 1;
-  display: flex;
-  min-height: 460px;
+.leetcode-lang-select option {
+  background-color: #262626;
+  color: #ffffff;
 }
 
-.codepad-problem-textarea {
-  width: 100%;
-  height: 100%;
-  min-height: 460px;
-  border: none;
-  outline: none;
-  background-color: transparent;
-  color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  font-size: 0.9rem;
-  line-height: 1.65;
-  padding: 1rem;
-  resize: none;
+/* 控制栏通用按钮 */
+.leetcode-bar-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 30px;
+  padding: 0 0.65rem;
+  font-size: 0.775rem;
+  font-weight: 500;
+  color: #cccccc;
+  background-color: #333333;
+  border: 1px solid #444444;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
-.codepad-problem-textarea::placeholder {
-  color: var(--text-tertiary);
-  line-height: 1.6;
-}
-
-/* 右侧代码编辑区 (带行号) */
-.codepad-editor-body {
-  flex: 1;
-  display: flex;
-  position: relative;
-  min-height: 460px;
-  background-color: var(--bg-surface-secondary);
-}
-
-/* 行号槽 */
-.codepad-linenumbers {
-  width: 48px;
+.leetcode-bar-btn svg {
+  width: 13px;
+  height: 13px;
   flex-shrink: 0;
-  padding: 1rem 0.5rem 1rem 0;
-  text-align: right;
-  user-select: none;
-  color: var(--text-tertiary);
-  font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
-  line-height: 1.6;
-  border-right: 1px solid var(--border-subtle);
-  background-color: rgba(0, 0, 0, 0.02);
-  overflow-y: hidden;
 }
 
-.codepad-line-num {
-  font-size: 0.85em;
-  opacity: 0.6;
+.leetcode-bar-btn:hover {
+  background-color: #404040;
+  color: #ffffff;
+  border-color: #555555;
 }
 
-/* 核心代码输入域 */
-.codepad-code-textarea {
-  flex: 1;
-  width: 100%;
-  min-height: 460px;
-  border: none;
-  outline: none;
-  background-color: transparent;
-  color: var(--text-primary);
-  font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  line-height: 1.6;
-  padding: 1rem 1rem 1rem 0.75rem;
-  resize: none;
-  white-space: pre;
-  overflow-wrap: normal;
-  overflow-x: auto;
-  tab-size: 4;
-  -moz-tab-size: 4;
+.leetcode-bar-btn.active {
+  background-color: rgba(255, 161, 22, 0.15);
+  border-color: #ffa116;
+  color: #ffa116;
 }
 
-.codepad-code-textarea::placeholder {
-  color: var(--text-tertiary);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 0.85rem;
+.leetcode-bar-btn.icon-only {
+  padding: 0 0.5rem;
 }
 
-/* 底部快捷键提示 */
-.codepad-footer-tips {
+.leetcode-bar-btn.copy-btn.copied {
+  background-color: rgba(44, 187, 93, 0.2);
+  border-color: #2cbb5d;
+  color: #2cbb5d;
+}
+
+.leetcode-bar-btn.danger {
+  color: #ff5252;
+}
+
+.leetcode-bar-btn.danger:hover {
+  background-color: rgba(255, 82, 82, 0.15);
+  border-color: #ff5252;
+}
+
+/* 字号调节组件 */
+.leetcode-font-adjust {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 1.25rem;
-  flex-wrap: wrap;
-  padding: 0.25rem 0.5rem;
+  background-color: #333333;
+  border: 1px solid #444444;
+  border-radius: 6px;
+  height: 30px;
+  overflow: hidden;
 }
 
-.tip-item {
+.font-btn {
+  background: transparent;
+  border: none;
+  color: #cccccc;
+  padding: 0 0.45rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  height: 100%;
+}
+
+.font-btn:hover {
+  background-color: #444444;
+  color: #ffffff;
+}
+
+.font-val {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #aaaaaa;
+  padding: 0 0.35rem;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* 主工作区分割 */
+.leetcode-split-area {
+  display: grid;
+  flex: 1;
+  min-height: 520px;
+  height: calc(100% - 76px);
+  background-color: #1e1e1e;
+}
+
+.leetcode-workbench.zen-mode .leetcode-split-area {
+  min-height: calc(100vh - 78px);
+  height: calc(100vh - 78px);
+}
+
+.leetcode-split-area.has-sidebar {
+  grid-template-columns: 38% 62%;
+}
+
+.leetcode-split-area.no-sidebar {
+  grid-template-columns: 100%;
+}
+
+@media (max-width: 900px) {
+  .leetcode-split-area.has-sidebar {
+    grid-template-columns: 100%;
+    grid-template-rows: 260px 1fr;
+  }
+}
+
+/* 左侧题目描述面板 */
+.leetcode-problem-panel {
+  display: flex;
+  flex-direction: column;
+  background-color: #222222;
+  border-right: 1px solid #333333;
+  overflow: hidden;
+}
+
+.panel-tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.85rem;
+  height: 36px;
+  background-color: #262626;
+  border-bottom: 1px solid #333333;
+}
+
+.tab-title {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   font-size: 0.775rem;
-  color: var(--text-tertiary);
+  font-weight: 600;
+  color: #e0e0e0;
 }
 
-.tip-item kbd {
-  display: inline-block;
-  padding: 2px 6px;
-  font-size: 0.725rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  color: var(--text-secondary);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+.tab-title svg {
+  width: 14px;
+  height: 14px;
+  color: #ffa116;
+}
+
+.tab-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.panel-mini-btn {
+  background: transparent;
+  border: 1px solid #444444;
   border-radius: 4px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  color: #aaaaaa;
+  font-size: 0.7rem;
+  padding: 2px 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.tip-item code {
-  font-family: ui-monospace, monospace;
-  color: var(--accent-color);
+.panel-mini-btn:hover {
+  background-color: #333333;
+  color: #ffffff;
+}
+
+.panel-mini-btn.danger:hover {
+  color: #ff5252;
+  border-color: #ff5252;
+}
+
+.panel-text-content {
+  flex: 1;
+  display: flex;
+  padding: 0.85rem;
+  background-color: #222222;
+  overflow: hidden;
+}
+
+.problem-textarea {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #dcdcdc;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.875rem;
+  line-height: 1.65;
+  resize: none;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.problem-textarea::placeholder {
+  color: #666666;
+}
+
+/* 右侧 Monaco Editor 面板 */
+.leetcode-editor-panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  background-color: #1e1e1e;
+  overflow: hidden;
+  position: relative;
+}
+
+.editor-tab-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0.85rem;
+  height: 36px;
+  background-color: #262626;
+  border-bottom: 1px solid #333333;
+  user-select: none;
+}
+
+.editor-active-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.775rem;
+  font-weight: 600;
+  color: #ffffff;
+  background-color: #1e1e1e;
+  padding: 0 0.85rem;
+  height: 100%;
+  border-top: 2px solid #ffa116;
+  border-left: 1px solid #333333;
+  border-right: 1px solid #333333;
+}
+
+.lang-indicator {
+  font-size: 0.65rem;
+  color: #2cbb5d;
+}
+
+.editor-status-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  font-size: 0.725rem;
+  color: #888888;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+.auto-save-status {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: #2cbb5d;
+}
+
+.auto-save-status svg {
+  width: 12px;
+  height: 12px;
+}
+
+.monaco-wrapper {
+  flex: 1;
+  width: 100%;
+  height: 100%;
+  position: relative;
+  min-height: 460px;
+}
+
+.leetcode-workbench.zen-mode .monaco-wrapper {
+  min-height: calc(100vh - 114px);
+}
+
+.monaco-loading-spinner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  color: #888888;
+  font-size: 0.85rem;
+}
+
+/* 底部状态/快捷键栏 */
+.leetcode-bottom-tips {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.85rem;
+  padding: 0.4rem 0.85rem;
+  background-color: #262626;
+  border-top: 1px solid #333333;
+  flex-wrap: wrap;
+}
+
+.tip-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.725rem;
+  color: #999999;
+}
+
+.tip-chip kbd {
+  display: inline-block;
+  padding: 1px 5px;
+  font-size: 0.675rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: #e0e0e0;
+  background-color: #333333;
+  border: 1px solid #484848;
+  border-radius: 3px;
 }
