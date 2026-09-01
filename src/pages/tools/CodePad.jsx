@@ -1,106 +1,133 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import Editor from '@monaco-editor/react';
 import ToolLayout from '../../components/ToolLayout';
 import './ToolsCommon.css';
 import './CodePad.css';
 
-// 预置语言基础模板代码
-const CODE_TEMPLATES = {
-  empty: '',
-  java: `public class Solution {
-    public static void main(String[] args) {
-        Solution solution = new Solution();
-        // TODO: 在此调用并测试你的代码
+// LeetCode 经典语言预置代码模版
+const LEETCODE_TEMPLATES = {
+  java: {
+    name: 'Java (17+)',
+    monacoLang: 'java',
+    template: `class Solution {
+    public int[] twoSum(int[] nums, int target) {
+        // TODO: 请在此手敲实现你的解题逻辑
         
-    }
-
-    public void solve() {
-        
+        return new int[0];
     }
 }
-`,
-  javascript: `/**
- * @param {any} input
- * @return {any}
- */
-function solution(input) {
-    // TODO: 实现解题逻辑
-    
-}
-
-// 测试用例
-console.log(solution());
-`,
-  python: `def solution():
-    # TODO: 实现解题逻辑
-    pass
-
-
-if __name__ == "__main__":
-    solution()
-`,
-  golang: `package main
-
-import "fmt"
-
-func solve() {
-    // TODO: 实现解题逻辑
-    
-}
-
-func main() {
-    solve()
-    fmt.Println("Done")
-}
-`,
-  cpp: `#include <iostream>
-#include <vector>
-#include <string>
+`
+  },
+  python: {
+    name: 'Python 3',
+    monacoLang: 'python',
+    template: `class Solution:
+    def twoSum(self, nums: list[int], target: int) -> list[int]:
+        # TODO: 请在此手敲实现你的解题逻辑
+        pass
+`
+  },
+  cpp: {
+    name: 'C++ 17',
+    monacoLang: 'cpp',
+    template: `#include <vector>
+#include <unordered_map>
+#include <iostream>
 
 using namespace std;
 
 class Solution {
 public:
-    void solve() {
-        // TODO: 实现解题逻辑
+    vector<int> twoSum(vector<int>& nums, int target) {
+        // TODO: 请在此手敲实现你的解题逻辑
         
+        return {};
     }
 };
-
-int main() {
-    Solution sol;
-    sol.solve();
-    return 0;
-}
-`,
-  sql: `-- 编写并测试你的 SQL 查询
-SELECT 
-    *
-FROM 
-    your_table
-WHERE 
-    1 = 1;
 `
+  },
+  golang: {
+    name: 'Go (Golang)',
+    monacoLang: 'go',
+    template: `package main
+
+func twoSum(nums []int, target int) []int {
+    // TODO: 请在此手敲实现你的解题逻辑
+    
+    return []int{}
+}
+`
+  },
+  javascript: {
+    name: 'JavaScript (ES6)',
+    monacoLang: 'javascript',
+    template: `/**
+ * @param {number[]} nums
+ * @param {number} target
+ * @return {number[]}
+ */
+var twoSum = function(nums, target) {
+    // TODO: 请在此手敲实现你的解题逻辑
+    
+};
+`
+  },
+  sql: {
+    name: 'MySQL / SQL',
+    monacoLang: 'sql',
+    template: `-- Write your SQL query statement below
+SELECT 
+    name,
+    score
+FROM 
+    StudentScores
+WHERE 
+    score >= 60
+ORDER BY 
+    score DESC;
+`
+  }
 };
 
-const STORAGE_KEY_CODE = 'ly_codepad_code_content';
-const STORAGE_KEY_PROBLEM = 'ly_codepad_problem_content';
-const STORAGE_KEY_CONFIG = 'ly_codepad_config';
+const STORAGE_KEY_CODE = 'ly_leetcode_pad_code';
+const STORAGE_KEY_PROBLEM = 'ly_leetcode_pad_problem';
+const STORAGE_KEY_CONFIG = 'ly_leetcode_pad_config';
+
+const DEFAULT_PROBLEM_TEXT = `【题目描述】
+给定一个整数数组 nums 和一个整数目标值 target，请你在该数组中找出 和为目标值 target 的那两个整数，并返回它们的数组下标。
+
+【示例 1】
+输入：nums = [2,7,11,15], target = 9
+输出：[0,1]
+解释：因为 nums[0] + nums[1] == 9 ，返回 [0, 1] 。
+
+【提示】
+* 2 <= nums.length <= 10^4
+* -10^9 <= nums[i] <= 10^9
+* -10^9 <= target <= 10^9
+* 只会存在一个有效答案
+`;
 
 /**
- * 代码练习板 (Code Scratchpad)
- * 专为网页题目手敲练习设计，无须开启笨重 IDE，智能控制缩进排版与分屏对照
+ * LeetCode 风格专业代码练习板 (Powered by Monaco Editor)
  */
 export default function CodePad() {
-  // 状态初始化：从 LocalStorage 恢复或使用初始值
+  const editorRef = useRef(null);
+
+  // 语言选择与代码内容
+  const [currentLang, setCurrentLang] = useState(() => {
+    return 'java';
+  });
+
   const [code, setCode] = useState(() => {
-    return localStorage.getItem(STORAGE_KEY_CODE) || CODE_TEMPLATES.java;
+    return localStorage.getItem(STORAGE_KEY_CODE) || LEETCODE_TEMPLATES.java.template;
   });
 
   const [problemNotes, setProblemNotes] = useState(() => {
-    return localStorage.getItem(STORAGE_KEY_PROBLEM) || '/* 在此粘贴你在网页上看到的题目描述、输入输出样例或随手笔记...\n * 支持分屏对照手敲代码，不干扰右侧编辑区。\n */';
+    return localStorage.getItem(STORAGE_KEY_PROBLEM) || DEFAULT_PROBLEM_TEXT;
   });
 
-  // 配置项：分屏、缩进大小、括号自动闭合、字号
+  // 配置项：双栏对照、全屏沉浸、主题、字号、小地图、自动换行
   const [config, setConfig] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY_CONFIG);
     if (saved) {
@@ -112,26 +139,23 @@ export default function CodePad() {
     }
     return {
       splitMode: true,
-      indentSize: 4, // 2, 4, or 'tab'
-      autoClosePairs: true,
-      fontSize: 14 // px
+      zenMode: false,
+      theme: 'vs-dark', // 'vs-dark', 'light', 'hc-black'
+      fontSize: 14,
+      minimap: false,
+      wordWrap: 'on',
+      tabSize: 4
     };
   });
 
-  const [selectedTemplate, setSelectedTemplate] = useState('java');
   const [copySuccess, setCopySuccess] = useState(false);
-  const [charCount, setCharCount] = useState(0);
-  const [lineCount, setLineCount] = useState(1);
+  const [stats, setStats] = useState({ lines: 1, chars: 0 });
 
-  // DOM 引用
-  const textareaRef = useRef(null);
-  const lineNumbersRef = useRef(null);
-
-  // 同步统计数据与本地持久化
+  // 本地自动持久化
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_CODE, code);
-    setCharCount(code.length);
-    setLineCount(code.split('\n').length);
+    localStorage.setItem(STORAGE_KEY_CODE, code || '');
+    const lines = (code || '').split('\n').length;
+    setStats({ lines, chars: (code || '').length });
   }, [code]);
 
   useEffect(() => {
@@ -142,215 +166,82 @@ export default function CodePad() {
     localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(config));
   }, [config]);
 
-  // 同步行号滚动
-  const handleScroll = useCallback(() => {
-    if (textareaRef.current && lineNumbersRef.current) {
-      lineNumbersRef.current.scrollTop = textareaRef.current.scrollTop;
+  // 全屏模式下监听 Esc 退出
+  useEffect(() => {
+    const handleGlobalKeyDown = (e) => {
+      if (e.key === 'Escape' && config.zenMode) {
+        setConfig(prev => ({ ...prev, zenMode: false }));
+      }
+    };
+    window.addEventListener('keydown', handleGlobalKeyDown);
+    return () => window.removeEventListener('keydown', handleGlobalKeyDown);
+  }, [config.zenMode]);
+
+  // Monaco Editor 挂载完成回调
+  const handleEditorDidMount = (editor, monaco) => {
+    editorRef.current = editor;
+
+    // 自定义深色 LeetCode 风格主题
+    monaco.editor.defineTheme('leetcode-dark', {
+      base: 'vs-dark',
+      inherit: true,
+      rules: [
+        { token: 'comment', foreground: '6a9955', fontStyle: 'italic' },
+        { token: 'keyword', foreground: '569cd6', fontStyle: 'bold' },
+        { token: 'string', foreground: 'ce9178' },
+        { token: 'number', foreground: 'b5cea8' },
+        { token: 'type', foreground: '4ec9b0' },
+        { token: 'function', foreground: 'dcdcaa' }
+      ],
+      colors: {
+        'editor.background': '#1e1e1e',
+        'editor.foreground': '#d4d4d4',
+        'editor.lineHighlightBackground': '#2a2d2e80',
+        'editorLineNumber.foreground': '#858585',
+        'editorLineNumber.activeForeground': '#c6c6c6',
+        'editorIndentGuide.background': '#404040',
+        'editorIndentGuide.activeBackground': '#707070'
+      }
+    });
+
+    if (config.theme === 'vs-dark') {
+      monaco.editor.setTheme('leetcode-dark');
     }
-  }, []);
+  };
 
-  // 获取当前配置对应的缩进字符串
-  const getIndentString = useCallback(() => {
-    if (config.indentSize === 'tab') return '\t';
-    return ' '.repeat(Number(config.indentSize) || 4);
-  }, [config.indentSize]);
-
-  // 核心键盘事件监听：处理 Tab 缩进、Shift+Tab 反向缩进、Enter 继承缩进、括号自动补全与成对跳过
-  const handleKeyDown = (e) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const { selectionStart, selectionEnd, value } = textarea;
-    const indentStr = getIndentString();
-    const isMultiLine = selectionStart !== selectionEnd && value.slice(selectionStart, selectionEnd).includes('\n');
-
-    // 1. 处理 Tab / Shift + Tab
-    if (e.key === 'Tab') {
-      e.preventDefault();
-
-      if (isMultiLine) {
-        // 多行选中批量缩进 / 批量反向缩进
-        const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
-        let lineEnd = value.indexOf('\n', selectionEnd);
-        if (lineEnd === -1) lineEnd = value.length;
-
-        const selectedBlock = value.slice(lineStart, lineEnd);
-        const lines = selectedBlock.split('\n');
-
-        let modifiedLines;
-        if (e.shiftKey) {
-          // 反向缩进：移除行首缩进
-          modifiedLines = lines.map(line => {
-            if (line.startsWith(indentStr)) return line.slice(indentStr.length);
-            if (line.startsWith('\t')) return line.slice(1);
-            if (line.startsWith('  ')) return line.slice(2);
-            if (line.startsWith(' ')) return line.slice(1);
-            return line;
-          });
-        } else {
-          // 正向缩进：行首增加缩进
-          modifiedLines = lines.map(line => indentStr + line);
-        }
-
-        const newBlock = modifiedLines.join('\n');
-        const updatedValue = value.slice(0, lineStart) + newBlock + value.slice(lineEnd);
-        setCode(updatedValue);
-
-        // 维持选中范围
-        setTimeout(() => {
-          textarea.setSelectionRange(lineStart, lineStart + newBlock.length);
-        }, 0);
-      } else {
-        // 单行或无选中缩进
-        if (e.shiftKey) {
-          // 单行反向缩进
-          const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
-          const currentLine = value.slice(lineStart, selectionStart);
-          let dedentCount = 0;
-          if (currentLine.startsWith(indentStr)) {
-            dedentCount = indentStr.length;
-          } else if (currentLine.startsWith(' ')) {
-            dedentCount = 1;
-          }
-
-          if (dedentCount > 0) {
-            const updatedValue = value.slice(0, lineStart) + value.slice(lineStart + dedentCount);
-            setCode(updatedValue);
-            setTimeout(() => {
-              const newPos = Math.max(lineStart, selectionStart - dedentCount);
-              textarea.setSelectionRange(newPos, newPos);
-            }, 0);
-          }
-        } else {
-          // 插入缩进
-          const updatedValue = value.slice(0, selectionStart) + indentStr + value.slice(selectionEnd);
-          setCode(updatedValue);
-          setTimeout(() => {
-            const newPos = selectionStart + indentStr.length;
-            textarea.setSelectionRange(newPos, newPos);
-          }, 0);
-        }
-      }
-      return;
-    }
-
-    // 2. 处理 Enter 换行自动继承缩进与大括号换行排版
-    if (e.key === 'Enter') {
-      e.preventDefault();
-
-      const lineStart = value.lastIndexOf('\n', selectionStart - 1) + 1;
-      const currentLineBeforeCursor = value.slice(lineStart, selectionStart);
-      const leadingIndentMatch = currentLineBeforeCursor.match(/^[\t ]*/);
-      let baseIndent = leadingIndentMatch ? leadingIndentMatch[0] : '';
-
-      const trimmedBefore = currentLineBeforeCursor.trimEnd();
-      const isBlockOpener = trimmedBefore.endsWith('{') || trimmedBefore.endsWith(':') || trimmedBefore.endsWith('(') || trimmedBefore.endsWith('[');
-      const nextChar = value.slice(selectionStart, selectionStart + 1);
-
-      // 特殊情况：处于 { 与 } 之间回车时，展开并保持两层缩进
-      if (trimmedBefore.endsWith('{') && nextChar === '}') {
-        const extraIndent = baseIndent + indentStr;
-        const insertText = '\n' + extraIndent + '\n' + baseIndent;
-        const updatedValue = value.slice(0, selectionStart) + insertText + value.slice(selectionEnd);
-        setCode(updatedValue);
-
-        setTimeout(() => {
-          const cursorPosition = selectionStart + 1 + extraIndent.length;
-          textarea.setSelectionRange(cursorPosition, cursorPosition);
-        }, 0);
-        return;
-      }
-
-      // 常规换行：继承上一行缩进，若行尾是开括号则加一级缩进
-      let nextLineIndent = baseIndent;
-      if (isBlockOpener) {
-        nextLineIndent += indentStr;
-      }
-
-      const insertText = '\n' + nextLineIndent;
-      const updatedValue = value.slice(0, selectionStart) + insertText + value.slice(selectionEnd);
-      setCode(updatedValue);
-
-      setTimeout(() => {
-        const cursorPosition = selectionStart + insertText.length;
-        textarea.setSelectionRange(cursorPosition, cursorPosition);
-      }, 0);
-      return;
-    }
-
-    // 3. 自动闭合括号与引号处理
-    if (config.autoClosePairs) {
-      const pairs = {
-        '(': ')',
-        '[': ']',
-        '{': '}',
-        '"': '"',
-        "'": "'",
-        '`': '`'
-      };
-
-      // 键入开括号/引号
-      if (pairs[e.key]) {
-        const closeChar = pairs[e.key];
-        // 如果有选中文本，包裹选中文本
-        if (selectionStart !== selectionEnd) {
-          e.preventDefault();
-          const selectedText = value.slice(selectionStart, selectionEnd);
-          const wrapped = e.key + selectedText + closeChar;
-          const updatedValue = value.slice(0, selectionStart) + wrapped + value.slice(selectionEnd);
-          setCode(updatedValue);
-          setTimeout(() => {
-            textarea.setSelectionRange(selectionStart + 1, selectionEnd + 1);
-          }, 0);
-          return;
-        }
-
-        // 无选中时，如果是引号且紧跟相同的字符，则直接跳过
-        const nextChar = value.slice(selectionStart, selectionStart + 1);
-        if ((e.key === '"' || e.key === "'" || e.key === '`') && nextChar === e.key) {
-          e.preventDefault();
-          textarea.setSelectionRange(selectionStart + 1, selectionStart + 1);
-          return;
-        }
-
-        // 插入成对符号
-        e.preventDefault();
-        const updatedValue = value.slice(0, selectionStart) + e.key + closeChar + value.slice(selectionEnd);
-        setCode(updatedValue);
-        setTimeout(() => {
-          textarea.setSelectionRange(selectionStart + 1, selectionStart + 1);
-        }, 0);
-        return;
-      }
-
-      // 键入闭合字符时，若下一个字符刚好是该闭合字符，则光标后移一位跳过
-      if ([')', ']', '}', '"', "'", '`'].includes(e.key)) {
-        const nextChar = value.slice(selectionStart, selectionStart + 1);
-        if (nextChar === e.key) {
-          e.preventDefault();
-          textarea.setSelectionRange(selectionStart + 1, selectionStart + 1);
-          return;
-        }
-      }
-
-      // 处理 Backspace 删除成对符号
-      if (e.key === 'Backspace' && selectionStart === selectionEnd && selectionStart > 0) {
-        const prevChar = value.slice(selectionStart - 1, selectionStart);
-        const nextChar = value.slice(selectionStart, selectionStart + 1);
-        if (pairs[prevChar] && pairs[prevChar] === nextChar) {
-          e.preventDefault();
-          const updatedValue = value.slice(0, selectionStart - 1) + value.slice(selectionStart + 1);
-          setCode(updatedValue);
-          setTimeout(() => {
-            textarea.setSelectionRange(selectionStart - 1, selectionStart - 1);
-          }, 0);
-          return;
-        }
+  // 切换编程语言
+  const handleLanguageChange = (newLangKey) => {
+    setCurrentLang(newLangKey);
+    const targetTpl = LEETCODE_TEMPLATES[newLangKey];
+    if (targetTpl) {
+      if (!code.trim() || window.confirm(`是否载入 ${targetTpl.name} 的 LeetCode 默认解题模版？`)) {
+        setCode(targetTpl.template);
       }
     }
   };
 
-  // 复制完整代码
+  // 重置为当前语言默认模版
+  const handleResetTemplate = () => {
+    const currentTpl = LEETCODE_TEMPLATES[currentLang];
+    if (currentTpl && window.confirm(`确定还原为 ${currentTpl.name} 的默认 LeetCode 模版吗？`)) {
+      setCode(currentTpl.template);
+      if (editorRef.current) {
+        editorRef.current.focus();
+      }
+    }
+  };
+
+  // 代码格式化
+  const handleFormatCode = () => {
+    if (editorRef.current) {
+      const action = editorRef.current.getAction('editor.action.formatDocument');
+      if (action) {
+        action.run();
+      }
+    }
+  };
+
+  // 复制代码
   const handleCopyCode = async () => {
     try {
       await navigator.clipboard.writeText(code);
@@ -361,263 +252,344 @@ export default function CodePad() {
     }
   };
 
-  // 载入模版
-  const handleLoadTemplate = (tplKey) => {
-    setSelectedTemplate(tplKey);
-    if (tplKey && CODE_TEMPLATES[tplKey] !== undefined) {
-      if (code.trim() && !window.confirm('加载模版将覆盖当前代码板内容，是否继续？')) {
-        return;
-      }
-      setCode(CODE_TEMPLATES[tplKey]);
-    }
-  };
-
   // 清空代码
   const handleClearCode = () => {
-    if (window.confirm('确定清空代码板内容吗？')) {
+    if (window.confirm('确定清空代码编辑器内容吗？')) {
       setCode('');
-      if (textareaRef.current) textareaRef.current.focus();
+      if (editorRef.current) editorRef.current.focus();
     }
   };
 
-  // 清空题目笔记
-  const handleClearNotes = () => {
-    if (window.confirm('确定清空左侧题目/笔记内容吗？')) {
-      setProblemNotes('');
-    }
+  // 插入样例模板至题目区
+  const handleInsertExample = () => {
+    const sample = `\n【新示例】\n输入：\n输出：\n解释：\n`;
+    setProblemNotes(prev => prev + sample);
   };
 
-  // 生成行号列表
-  const lineNumbersArray = Array.from({ length: Math.max(1, lineCount) }, (_, i) => i + 1);
+  // 工作台主体 UI
+  const workbenchContent = (
+    <div className={`leetcode-workbench ${config.zenMode ? 'zen-mode' : ''}`}>
+      {/* 顶部 LeetCode 经典黑晶控制条 */}
+      <div className="leetcode-topbar">
+        {/* 左侧区域：语言选择、重置、格式化 */}
+        <div className="topbar-left">
+          {/* 语言选择下拉 */}
+          <div className="leetcode-select-group">
+            <svg className="leetcode-top-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg>
+            <select
+              className="leetcode-lang-select"
+              value={currentLang}
+              onChange={(e) => handleLanguageChange(e.target.value)}
+              title="选择编程语言"
+            >
+              {Object.entries(LEETCODE_TEMPLATES).map(([key, item]) => (
+                <option key={key} value={key}>
+                  {item.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="topbar-divider" />
+
+          {/* 还原默认代码模版 */}
+          <button
+            type="button"
+            className="leetcode-bar-btn"
+            onClick={handleResetTemplate}
+            title="还原为 LeetCode 默认类定义"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+            </svg>
+            <span>重置模版</span>
+          </button>
+
+          {/* 格式化代码 */}
+          <button
+            type="button"
+            className="leetcode-bar-btn"
+            onClick={handleFormatCode}
+            title="格式化代码 (Format Code)"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <line x1="21" y1="10" x2="3" y2="10" />
+              <line x1="21" y1="6" x2="3" y2="6" />
+              <line x1="21" y1="14" x2="3" y2="14" />
+              <line x1="21" y1="18" x2="3" y2="18" />
+            </svg>
+            <span>格式化</span>
+          </button>
+
+          {/* 分屏对照切换 */}
+          <button
+            type="button"
+            className={`leetcode-bar-btn ${config.splitMode ? 'active' : ''}`}
+            onClick={() => setConfig(prev => ({ ...prev, splitMode: !prev.splitMode }))}
+            title={config.splitMode ? '隐藏左侧题目，切换为纯净单栏' : '展开左侧题目对照区'}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <line x1="12" y1="3" x2="12" y2="21" />
+            </svg>
+            <span>{config.splitMode ? '分屏对照' : '单栏模式'}</span>
+          </button>
+        </div>
+
+        {/* 右侧区域：主题、字号、小地图、全屏、复制 */}
+        <div className="topbar-right">
+          {/* 主题选择 */}
+          <select
+            className="leetcode-lang-select mini"
+            value={config.theme}
+            onChange={(e) => setConfig(prev => ({ ...prev, theme: e.target.value }))}
+            title="切换编辑器主题"
+          >
+            <option value="vs-dark">深色暗黑 (LeetCode)</option>
+            <option value="light">清爽浅色</option>
+            <option value="hc-black">高对比度</option>
+          </select>
+
+          {/* 字号调整 */}
+          <div className="leetcode-font-adjust">
+            <button
+              type="button"
+              className="font-btn"
+              onClick={() => setConfig(prev => ({ ...prev, fontSize: Math.max(12, prev.fontSize - 1) }))}
+              title="缩小字号"
+            >
+              A-
+            </button>
+            <span className="font-val">{config.fontSize}</span>
+            <button
+              type="button"
+              className="font-btn"
+              onClick={() => setConfig(prev => ({ ...prev, fontSize: Math.min(22, prev.fontSize + 1) }))}
+              title="放大字号"
+            >
+              A+
+            </button>
+          </div>
+
+          {/* Minimap 开关 */}
+          <button
+            type="button"
+            className={`leetcode-bar-btn icon-only ${config.minimap ? 'active' : ''}`}
+            onClick={() => setConfig(prev => ({ ...prev, minimap: !prev.minimap }))}
+            title={config.minimap ? '隐藏小地图 (Minimap)' : '开启小地图 (Minimap)'}
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <line x1="15" y1="3" x2="15" y2="21" />
+              <line x1="17" y1="7" x2="19" y2="7" />
+              <line x1="17" y1="11" x2="19" y2="11" />
+            </svg>
+          </button>
+
+          {/* 网页沉浸全屏 Zen Mode 切换 */}
+          <button
+            type="button"
+            className={`leetcode-bar-btn ${config.zenMode ? 'active' : ''}`}
+            onClick={() => setConfig(prev => ({ ...prev, zenMode: !prev.zenMode }))}
+            title={config.zenMode ? '退出沉浸全屏模式 (Esc)' : '进入网页沉浸全屏模式 (Zen Mode)'}
+          >
+            {config.zenMode ? (
+              <>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="4 14 10 14 10 20" />
+                  <polyline points="20 10 14 10 14 4" />
+                  <line x1="14" y1="10" x2="21" y2="3" />
+                  <line x1="3" y1="21" x2="10" y2="14" />
+                </svg>
+                <span>退出全屏</span>
+              </>
+            ) : (
+              <>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <polyline points="15 3 21 3 21 9" />
+                  <polyline points="9 21 3 21 3 15" />
+                  <line x1="21" y1="3" x2="14" y2="10" />
+                  <line x1="3" y1="21" x2="10" y2="14" />
+                </svg>
+                <span>沉浸全屏</span>
+              </>
+            )}
+          </button>
+
+          {/* 一键复制代码 */}
+          <button
+            type="button"
+            className={`leetcode-bar-btn copy-btn ${copySuccess ? 'copied' : ''}`}
+            onClick={handleCopyCode}
+            title="复制代码到剪贴板"
+          >
+            {copySuccess ? (
+              <>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                <span>已复制</span>
+              </>
+            ) : (
+              <>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+                <span>复制代码</span>
+              </>
+            )}
+          </button>
+
+          {/* 清空代码 */}
+          <button
+            type="button"
+            className="leetcode-bar-btn danger"
+            onClick={handleClearCode}
+            title="清空当前代码"
+          >
+            清空
+          </button>
+        </div>
+      </div>
+
+      {/* 工作区分割区：左侧题目 + 右侧 Monaco Editor */}
+      <div className={`leetcode-split-area ${config.splitMode ? 'has-sidebar' : 'no-sidebar'}`}>
+        {/* 左侧：题目描述与用例面板 */}
+        {config.splitMode && (
+          <aside className="leetcode-problem-panel">
+            <div className="panel-tab-header">
+              <div className="tab-title active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                  <polyline points="10 9 9 9 8 9" />
+                </svg>
+                <span>题目描述 & 用例</span>
+              </div>
+              <div className="tab-actions">
+                <button
+                  type="button"
+                  className="panel-mini-btn"
+                  onClick={handleInsertExample}
+                  title="插入用例模版"
+                >
+                  + 加示例
+                </button>
+                <button
+                  type="button"
+                  className="panel-mini-btn danger"
+                  onClick={() => {
+                    if (window.confirm('确定清空题目内容吗？')) setProblemNotes('');
+                  }}
+                  title="清空题目内容"
+                >
+                  清空
+                </button>
+              </div>
+            </div>
+            <div className="panel-text-content">
+              <textarea
+                className="problem-textarea"
+                value={problemNotes}
+                onChange={(e) => setProblemNotes(e.target.value)}
+                placeholder="在此粘贴题目描述、输入输出样例或笔记思路..."
+                spellCheck="false"
+              />
+            </div>
+          </aside>
+        )}
+
+        {/* 右侧：Monaco 代码编辑器 */}
+        <main className="leetcode-editor-panel">
+          <div className="editor-tab-bar">
+            <div className="editor-active-tab">
+              <span className="lang-indicator">●</span>
+              <span>Solution.{currentLang === 'python' ? 'py' : currentLang === 'golang' ? 'go' : currentLang === 'cpp' ? 'cpp' : currentLang === 'sql' ? 'sql' : currentLang === 'javascript' ? 'js' : 'java'}</span>
+            </div>
+            <div className="editor-status-bar">
+              <span className="auto-save-status">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                  <polyline points="17 21 17 13 7 13 7 21" />
+                  <polyline points="7 3 7 8 15 8" />
+                </svg>
+                实时暂存
+              </span>
+              <span className="status-item">{stats.lines} 行</span>
+              <span className="status-item">{stats.chars} 字符</span>
+            </div>
+          </div>
+
+          <div className="monaco-wrapper">
+            <Editor
+              height="100%"
+              language={LEETCODE_TEMPLATES[currentLang]?.monacoLang || 'java'}
+              value={code}
+              theme={config.theme}
+              onChange={(value) => setCode(value || '')}
+              onMount={handleEditorDidMount}
+              options={{
+                fontSize: config.fontSize,
+                fontFamily: "'Fira Code', 'Cascadia Code', Consolas, Menlo, Monaco, monospace",
+                fontLigatures: true,
+                tabSize: config.tabSize,
+                minimap: { enabled: config.minimap },
+                scrollBeyondLastLine: false,
+                automaticLayout: true,
+                lineNumbers: 'on',
+                renderLineHighlight: 'all',
+                bracketPairColorization: { enabled: true },
+                guides: {
+                  indentation: true,
+                  bracketPairs: true
+                },
+                wordWrap: config.wordWrap,
+                cursorBlinking: 'smooth',
+                cursorSmoothCaretAnimation: 'on',
+                smoothScrolling: true,
+                formatOnPaste: true,
+                formatOnType: true,
+                quickSuggestions: true,
+                suggestOnTriggerCharacters: true,
+                padding: { top: 12, bottom: 12 }
+              }}
+              loading={<div className="monaco-loading-spinner">正在加载 LeetCode 编辑器内核...</div>}
+            />
+          </div>
+        </main>
+      </div>
+
+      {/* 底部快捷键状态提示 */}
+      <footer className="leetcode-bottom-tips">
+        <div className="tip-chip">
+          <kbd>Tab</kbd> / <kbd>Shift+Tab</kbd> 智能缩进
+        </div>
+        <div className="tip-chip">
+          <kbd>Alt+Shift+F</kbd> (Mac: Option+Shift+F) 格式化代码
+        </div>
+        <div className="tip-chip">
+          <kbd>Ctrl+F</kbd> 代码查找替换
+        </div>
+        <div className="tip-chip">
+          <kbd>Esc</kbd> 退出全屏
+        </div>
+      </footer>
+    </div>
+  );
 
   return (
     <ToolLayout
       title="代码练习板"
-      desc="专为手敲练习与题目演算设计的轻量代码板。支持智能 Tab 缩进、回车继承对齐、双栏对照与防丢自动暂存。"
+      desc="LeetCode 同款 Monaco Editor 沉浸式代码手敲工作台，支持真实语法高亮、代码折叠、智能缩进与双栏对照。"
     >
-      <div className="codepad-container">
-        {/* 顶部总控制栏 */}
-        <div className="codepad-toolbar">
-          {/* 左侧主要操作组 */}
-          <div className="codepad-toolbar-left">
-            {/* 分屏对照模式切换 */}
-            <button
-              type="button"
-              className={`apple-btn apple-btn-sm ${config.splitMode ? 'apple-btn-primary' : 'apple-btn-secondary'}`}
-              onClick={() => setConfig(prev => ({ ...prev, splitMode: !prev.splitMode }))}
-              title={config.splitMode ? '点击切换为纯净单栏全宽模式' : '点击开启双栏对照模式'}
-            >
-              <svg className="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                <line x1="12" y1="3" x2="12" y2="21" />
-              </svg>
-              <span>{config.splitMode ? '双栏对照' : '单栏专注'}</span>
-            </button>
-
-            {/* 语言模板快速载入 */}
-            <div className="codepad-select-wrapper">
-              <label className="codepad-label-inline">模板:</label>
-              <select
-                className="apple-select codepad-mini-select"
-                value={selectedTemplate}
-                onChange={(e) => handleLoadTemplate(e.target.value)}
-                title="选择语言预置骨架代码"
-              >
-                <option value="empty">空白纯净板</option>
-                <option value="java">Java Solution</option>
-                <option value="javascript">JavaScript / Node</option>
-                <option value="python">Python 3</option>
-                <option value="golang">Go (Golang)</option>
-                <option value="cpp">C++ 17</option>
-                <option value="sql">SQL 查询</option>
-              </select>
-            </div>
-
-            {/* 缩进设置 */}
-            <div className="codepad-select-wrapper">
-              <label className="codepad-label-inline">缩进:</label>
-              <select
-                className="apple-select codepad-mini-select"
-                value={config.indentSize}
-                onChange={(e) => setConfig(prev => ({ ...prev, indentSize: e.target.value }))}
-                title="选择按下 Tab 键插入的缩进宽度"
-              >
-                <option value="4">4 空格</option>
-                <option value="2">2 空格</option>
-                <option value="tab">Tab 制表符</option>
-              </select>
-            </div>
-
-            {/* 括号自动闭合开关 */}
-            <button
-              type="button"
-              className={`codepad-toggle-btn ${config.autoClosePairs ? 'active' : ''}`}
-              onClick={() => setConfig(prev => ({ ...prev, autoClosePairs: !prev.autoClosePairs }))}
-              title="自动补全成对括号 () [] {} '' ''"
-            >
-              <span className="toggle-indicator"></span>
-              <span>自动括号</span>
-            </button>
-          </div>
-
-          {/* 右侧操作组 */}
-          <div className="codepad-toolbar-right">
-            {/* 字号缩放 */}
-            <div className="codepad-font-controls">
-              <button
-                type="button"
-                className="apple-btn apple-btn-secondary apple-btn-sm codepad-icon-btn"
-                onClick={() => setConfig(prev => ({ ...prev, fontSize: Math.max(12, prev.fontSize - 1) }))}
-                title="缩小字号"
-              >
-                A-
-              </button>
-              <span className="codepad-font-size-text">{config.fontSize}px</span>
-              <button
-                type="button"
-                className="apple-btn apple-btn-secondary apple-btn-sm codepad-icon-btn"
-                onClick={() => setConfig(prev => ({ ...prev, fontSize: Math.min(22, prev.fontSize + 1) }))}
-                title="放大字号"
-              >
-                A+
-              </button>
-            </div>
-
-            {/* 一键复制代码 */}
-            <button
-              type="button"
-              className={`apple-btn apple-btn-sm ${copySuccess ? 'apple-btn-primary' : 'apple-btn-secondary'}`}
-              onClick={handleCopyCode}
-              title="复制全部代码到剪贴板"
-            >
-              {copySuccess ? (
-                <>
-                  <svg className="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                  <span>已复制</span>
-                </>
-              ) : (
-                <>
-                  <svg className="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                  <span>复制代码</span>
-                </>
-              )}
-            </button>
-
-            {/* 清空代码 */}
-            <button
-              type="button"
-              className="apple-btn apple-btn-ghost apple-btn-sm codepad-clear-btn"
-              onClick={handleClearCode}
-              title="清空当前代码输入区"
-            >
-              清空
-            </button>
-          </div>
-        </div>
-
-        {/* 主体工作区 (双栏分屏 或 单栏沉浸) */}
-        <div className={`codepad-workspace ${config.splitMode ? 'split-layout' : 'single-layout'}`}>
-          {/* 左侧：题目 / 参考草稿区 (仅在分屏模式展示) */}
-          {config.splitMode && (
-            <div className="codepad-pane codepad-problem-pane">
-              <div className="codepad-pane-header">
-                <div className="codepad-pane-title">
-                  <svg className="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-                    <polyline points="14 2 14 8 20 8" />
-                    <line x1="16" y1="13" x2="8" y2="13" />
-                    <line x1="16" y1="17" x2="8" y2="17" />
-                    <polyline points="10 9 9 9 8 9" />
-                  </svg>
-                  <span>题目描述 / 参考用例</span>
-                </div>
-                <div className="codepad-pane-actions">
-                  <button
-                    type="button"
-                    className="codepad-text-btn"
-                    onClick={handleClearNotes}
-                    title="清空题目区"
-                  >
-                    清空题目
-                  </button>
-                </div>
-              </div>
-              <div className="codepad-pane-content">
-                <textarea
-                  className="codepad-problem-textarea"
-                  value={problemNotes}
-                  onChange={(e) => setProblemNotes(e.target.value)}
-                  placeholder="在此粘贴或记录你在网页、LeetCode、牛客或博客中看到的题目要求、输入输出测试用例或思路要点..."
-                  spellCheck="false"
-                />
-              </div>
-            </div>
-          )}
-
-          {/* 右侧：代码编辑主窗口 */}
-          <div className="codepad-pane codepad-editor-pane">
-            <div className="codepad-pane-header">
-              <div className="codepad-pane-title">
-                <svg className="tool-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polyline points="16 18 22 12 16 6" />
-                  <polyline points="8 6 2 12 8 18" />
-                </svg>
-                <span>手写代码板</span>
-                <span className="codepad-autosave-badge">● 本地自动保存</span>
-              </div>
-              <div className="codepad-stats-info">
-                <span>{lineCount} 行</span>
-                <span className="stat-divider">/</span>
-                <span>{charCount} 字符</span>
-              </div>
-            </div>
-
-            <div className="codepad-editor-body" style={{ fontSize: `${config.fontSize}px` }}>
-              {/* 行号侧栏 */}
-              <div className="codepad-linenumbers" ref={lineNumbersRef} aria-hidden="true">
-                {lineNumbersArray.map((num) => (
-                  <div key={num} className="codepad-line-num">
-                    {num}
-                  </div>
-                ))}
-              </div>
-
-              {/* 核心输入文本域 */}
-              <textarea
-                ref={textareaRef}
-                className="codepad-code-textarea"
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                onKeyDown={handleKeyDown}
-                onScroll={handleScroll}
-                placeholder="开始手敲你的代码逻辑... (支持 Tab 智能缩进、Shift+Tab 反向对齐、回车继承上一行缩进)"
-                spellCheck="false"
-                autoCapitalize="off"
-                autoComplete="off"
-                autoCorrect="off"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* 底部贴心小贴士 */}
-        <div className="codepad-footer-tips">
-          <div className="tip-item">
-            <kbd>Tab</kbd> / <kbd>Shift+Tab</kbd> 智能缩进与反向缩进
-          </div>
-          <div className="tip-item">
-            <kbd>Enter</kbd> 智能继承上一行缩进（遇 <code>{'{'}</code> 自动换行缩进展开）
-          </div>
-          <div className="tip-item">
-            <kbd>() [] {} ""</kbd> 成对自动包裹与自动闭合
-          </div>
-        </div>
-      </div>
+      {workbenchContent}
     </ToolLayout>
   );
 }
