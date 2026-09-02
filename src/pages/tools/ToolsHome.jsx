@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '../../components/Header';
 import SearchBar from '../../components/SearchBar';
 import CategoryTabs from '../../components/CategoryTabs';
+import { useCategoryFilter } from '../../hooks/useCategoryFilter';
 import { tools, toolCategories } from '../../data/tools';
 import './ToolsHome.css';
 
@@ -94,32 +95,12 @@ export default function ToolsHome() {
   const [keyword, setKeyword] = useState('');
   const [activeCategory, setActiveCategory] = useState('全部');
 
-  // 统计各分类小工具数量
-  const categoryCounts = useMemo(() => {
-    const counts = { 全部: tools.length };
-    toolCategories.forEach((cat) => {
-      if (cat !== '全部') {
-        counts[cat] = tools.filter((tool) => tool.category === cat).length;
-      }
-    });
-    return counts;
-  }, []);
-
-  // 综合分类与关键词过滤
-  const filteredTools = useMemo(() => {
-    return tools.filter((tool) => {
-      const matchesCategory =
-        activeCategory === '全部' || tool.category === activeCategory;
-
-      const cleanKeyword = keyword.trim().toLowerCase();
-      const matchesSearch =
-        !cleanKeyword ||
-        tool.name.toLowerCase().includes(cleanKeyword) ||
-        (tool.desc && tool.desc.toLowerCase().includes(cleanKeyword));
-
-      return matchesCategory && matchesSearch;
-    });
-  }, [keyword, activeCategory]);
+  // 复用搜索与分类过滤 Hook
+  const { filteredList: filteredTools, categoryCounts } = useCategoryFilter(tools, {
+    keyword,
+    activeCategory,
+    categories: toolCategories,
+  });
 
   const handleResetFilter = () => {
     setKeyword('');

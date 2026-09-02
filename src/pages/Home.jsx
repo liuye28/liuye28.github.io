@@ -1,8 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import Header from '../components/Header';
 import SearchBar from '../components/SearchBar';
 import CategoryTabs from '../components/CategoryTabs';
 import SiteGrid from '../components/SiteGrid';
+import { useCategoryFilter } from '../hooks/useCategoryFilter';
 import { categories, sites } from '../data/sites';
 import './Home.css';
 
@@ -13,32 +14,12 @@ export default function Home() {
   const [keyword, setKeyword] = useState('');
   const [activeCategory, setActiveCategory] = useState('全部');
 
-  // 统计分类条目总数
-  const categoryCounts = useMemo(() => {
-    const counts = { 全部: sites.length };
-    categories.forEach((cat) => {
-      if (cat !== '全部') {
-        counts[cat] = sites.filter((site) => site.category === cat).length;
-      }
-    });
-    return counts;
-  }, []);
-
-  // 综合分类与关键词过滤
-  const filteredSites = useMemo(() => {
-    return sites.filter((site) => {
-      const matchesCategory =
-        activeCategory === '全部' || site.category === activeCategory;
-
-      const cleanKeyword = keyword.trim().toLowerCase();
-      const matchesSearch =
-        !cleanKeyword ||
-        site.name.toLowerCase().includes(cleanKeyword) ||
-        (site.desc && site.desc.toLowerCase().includes(cleanKeyword));
-
-      return matchesCategory && matchesSearch;
-    });
-  }, [keyword, activeCategory]);
+  // 复用搜索与分类过滤 Hook
+  const { filteredList: filteredSites, categoryCounts } = useCategoryFilter(sites, {
+    keyword,
+    activeCategory,
+    categories,
+  });
 
   const handleResetFilter = () => {
     setKeyword('');
