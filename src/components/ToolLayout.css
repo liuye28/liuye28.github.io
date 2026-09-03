@@ -36,6 +36,21 @@
   margin-bottom: 0.35rem;
 }
 
+.tool-privacy-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.725rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  letter-spacing: 0.02em;
+  user-select: none;
+}
+
 .tool-page-desc {
   font-size: 0.95rem;
   color: var(--text-secondary);

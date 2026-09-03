@@ -1,5 +1,6 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 
 /**
@@ -31,7 +32,23 @@ export default function RegexTester() {
     s: false
   });
   const [text, setText] = useState(DEFAULT_TEXT);
-  const [copiedIndex, setCopiedIndex] = useState(null);
+  const [copiedIndex, copyMatch] = useCopyToClipboard();
+  const patternInputRef = useRef(null);
+
+  // 快捷键支持：全局 ⌘K / Ctrl+K 聚焦到正则模式输入框
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (patternInputRef.current) {
+          patternInputRef.current.focus();
+          patternInputRef.current.select();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // 拼接 flags 字符串
   const flagStr = useMemo(() => {
@@ -141,13 +158,6 @@ export default function RegexTester() {
     });
   };
 
-  const copyMatch = (matchText, index) => {
-    navigator.clipboard.writeText(matchText).then(() => {
-      setCopiedIndex(index);
-      setTimeout(() => setCopiedIndex(null), 1500);
-    });
-  };
-
   return (
     <ToolLayout
       title="正则表达式测试器"
@@ -156,7 +166,10 @@ export default function RegexTester() {
       {/* 正则输入区域 */}
       <div className="tool-section">
         <div className="tool-section-title">
-          <span>正则表达式与修饰符</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span>正则表达式与修饰符</span>
+            <span className="tool-form-hint" style={{ marginTop: 0 }}>快捷键: ⌘/Ctrl+K 聚焦</span>
+          </div>
           <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
             {PRESETS.map((p) => (
               <button
@@ -175,6 +188,7 @@ export default function RegexTester() {
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontSize: '1.25rem', color: 'var(--text-tertiary)', fontWeight: 600 }}>/</span>
             <input
+              ref={patternInputRef}
               type="text"
               className="apple-input"
               style={{
@@ -182,7 +196,7 @@ export default function RegexTester() {
                 fontSize: '1rem',
                 fontWeight: 600
               }}
-              placeholder="输入正则表达式模式..."
+              placeholder="输入正则表达式模式 (支持 ⌘/Ctrl+K 快捷聚焦)..."
               value={pattern}
               onChange={(e) => setPattern(e.target.value)}
               spellCheck="false"
