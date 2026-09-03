@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { NavLink, Link } from 'react-router-dom';
+import { safeGetItem, safeRemoveItem, safeGetJSON, safeSetJSON } from '../utils/storage';
 import './Header.css';
 
 const STORAGE_KEY = 'theme_pref';
@@ -12,34 +13,27 @@ const OLD_MANUAL_KEY = 'theme_preference_manual';
  * @returns {{ theme: 'dark' | 'light', manual: boolean }}
  */
 function getInitialThemePref() {
-  try {
-    // 1. 尝试从新合并 key 读取
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed && (parsed.theme === 'dark' || parsed.theme === 'light')) {
-        return {
-          theme: parsed.theme,
-          manual: Boolean(parsed.manual),
-        };
-      }
-    }
+  // 1. 尝试从新合并 key 读取
+  const parsed = safeGetJSON(STORAGE_KEY, null);
+  if (parsed && (parsed.theme === 'dark' || parsed.theme === 'light')) {
+    return {
+      theme: parsed.theme,
+      manual: Boolean(parsed.manual),
+    };
+  }
 
-    // 2. 兼容并一次性迁移旧版本的分散 key
-    const oldTheme = localStorage.getItem(OLD_THEME_KEY);
-    const oldManual = localStorage.getItem(OLD_MANUAL_KEY);
-    if (oldTheme === 'dark' || oldTheme === 'light') {
-      const migrated = {
-        theme: oldTheme,
-        manual: oldManual === 'true',
-      };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(migrated));
-      localStorage.removeItem(OLD_THEME_KEY);
-      localStorage.removeItem(OLD_MANUAL_KEY);
-      return migrated;
-    }
-  } catch {
-    // 容错处理 (如 JSON 解析错误或隐私模式下 localStorage 受限)
+  // 2. 兼容并一次性迁移旧版本的分散 key
+  const oldTheme = safeGetItem(OLD_THEME_KEY);
+  const oldManual = safeGetItem(OLD_MANUAL_KEY);
+  if (oldTheme === 'dark' || oldTheme === 'light') {
+    const migrated = {
+      theme: oldTheme,
+      manual: oldManual === 'true',
+    };
+    safeSetJSON(STORAGE_KEY, migrated);
+    safeRemoveItem(OLD_THEME_KEY);
+    safeRemoveItem(OLD_MANUAL_KEY);
+    return migrated;
   }
 
   // 3. 无本地偏好时，默认跟随系统 prefers-color-scheme
@@ -63,11 +57,7 @@ export default function Header() {
   // 同步根节点 data-theme 属性与本地持久化
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', themePref.theme);
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(themePref));
-    } catch {
-      // 忽略存储异常
-    }
+    safeSetJSON(STORAGE_KEY, themePref);
   }, [themePref]);
 
   // 监听系统颜色方案变化（仅在用户未手动指定过主题时自动响应）

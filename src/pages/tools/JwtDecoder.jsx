@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 
 // 常用样例 JWT Token (仅用于演示调试)
@@ -68,7 +69,7 @@ function formatEpoch(epochSec) {
  */
 export default function JwtDecoder() {
   const [tokenInput, setTokenInput] = useState(SAMPLE_JWT);
-  const [copied, setCopied] = useState(false);
+  const [copied, copy] = useCopyToClipboard();
 
   // 解析计算
   const { header, payload, signature, error, expInfo, iatInfo } = useMemo(() => {
@@ -118,10 +119,7 @@ export default function JwtDecoder() {
 
   const handleCopyPayload = () => {
     if (!payload) return;
-    navigator.clipboard.writeText(JSON.stringify(payload, null, 2)).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    copy(JSON.stringify(payload, null, 2));
   };
 
   return (

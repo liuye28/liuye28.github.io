@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 
 // 常见 MySQL 样例
@@ -93,24 +94,23 @@ export default function SqlToPojo() {
   const [useLombok, setUseLombok] = useState(true);
   const [useTableField, setUseTableField] = useState(true);
   const [genMapper, setGenMapper] = useState(true);
-  const [copied, setCopied] = useState(false);
+  const [copiedKey, copy] = useCopyToClipboard();
 
   // SQL IN 格式化小助手状态
   const [inInput, setInInput] = useState('1001\n1002\n1003\n1004');
   const [isStringIn, setIsStringIn] = useState(false);
-  const [inCopied, setInCopied] = useState(false);
 
   // DDL 解析引擎
-  const { javaEntity, mapperCode, error, rawTableName } = useMemo(() => {
+  const { javaEntity, mapperCode, error, rawTableName, compositePkCols } = useMemo(() => {
     if (!sqlInput.trim()) {
-      return { javaEntity: '', mapperCode: '', error: null, rawTableName: '' };
+      return { javaEntity: '', mapperCode: '', error: null, rawTableName: '', compositePkCols: null };
     }
 
     try {
       // 1. 匹配表名
       const tableMatch = sqlInput.match(/create\s+table\s+[`"]?([a-zA-Z0-9_]+)[`"]?/i);
       if (!tableMatch) {
-        return { javaEntity: '', mapperCode: '', error: '未能匹配到有效的 CREATE TABLE 语句', rawTableName: '' };
+        return { javaEntity: '', mapperCode: '', error: '未能匹配到有效的 CREATE TABLE 语句', rawTableName: '', compositePkCols: null };
       }
       const tableName = tableMatch[1];
       const className = toPascalCase(tableName);
@@ -119,9 +119,16 @@ export default function SqlToPojo() {
       const tableCommentMatch = sqlInput.match(/comment\s*=\s*['"]([^'"]*)['"]/i);
       const tableComment = tableCommentMatch ? tableCommentMatch[1] : '';
 
-      // 3. 匹配主键定义
-      const pkMatch = sqlInput.match(/primary\s+key\s*\([`"]?([a-zA-Z0-9_]+)[`"]?\)/i);
-      const primaryKeyCol = pkMatch ? pkMatch[1] : '';
+      // 3. 匹配主键定义 (兼容单主键与多主键/组合主键)
+      const pkMatch = sqlInput.match(/primary\s+key\s*\(([^)]+)\)/i);
+      let primaryKeyCols = [];
+      let isCompositePk = false;
+      if (pkMatch) {
+        primaryKeyCols = pkMatch[1].split(',').map((c) => c.replace(/[`"'\s]/g, '')).filter(Boolean);
+        if (primaryKeyCols.length > 1) {
+          isCompositePk = true;
+        }
+      }
 
       // 4. 按行匹配列定义
       const lines = sqlInput.split('\n');
@@ -165,7 +172,7 @@ export default function SqlToPojo() {
           const colName = colMatch[1];
           const colType = colMatch[2];
           const isAutoInc = /auto_increment/i.test(trimmed);
-          const isPk = colName === primaryKeyCol || /primary\s+key/i.test(trimmed);
+          const isPk = primaryKeyCols.includes(colName) || (!pkMatch && /primary\s+key/i.test(trimmed));
 
           // 匹配列注释
           const commentMatch = trimmed.match(/comment\s+['"]([^'"]*)['"]/i);
@@ -258,10 +265,11 @@ export default function SqlToPojo() {
         javaEntity: codeLines.join('\n'),
         mapperCode: mapperStr,
         error: null,
-        rawTableName: tableName
+        rawTableName: tableName,
+        compositePkCols: isCompositePk ? primaryKeyCols : null
       };
     } catch (err) {
-      return { javaEntity: '', mapperCode: '', error: err.message, rawTableName: '' };
+      return { javaEntity: '', mapperCode: '', error: err.message, rawTableName: '', compositePkCols: null };
     }
   }, [sqlInput, packageName, useLombok, useTableField, genMapper]);
 
@@ -282,18 +290,12 @@ export default function SqlToPojo() {
 
   const handleCopy = (text) => {
     if (!text) return;
-    navigator.clipboard.writeText(text).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    copy(text, 'entity');
   };
 
   const handleCopyIn = () => {
     if (!formattedInSql) return;
-    navigator.clipboard.writeText(formattedInSql).then(() => {
-      setInCopied(true);
-      setTimeout(() => setInCopied(false), 1500);
-    });
+    copy(formattedInSql, 'inSql');
   };
 
   return (
@@ -401,13 +403,32 @@ export default function SqlToPojo() {
             <span>MyBatis-Plus 实体类代码</span>
             <button
               type="button"
-              className={`apple-btn apple-btn-primary apple-btn-sm ${copied ? 'apple-btn-secondary' : ''}`}
+              className={`apple-btn apple-btn-primary apple-btn-sm ${copiedKey === 'entity' ? 'apple-btn-secondary' : ''}`}
               onClick={() => handleCopy(javaEntity + (mapperCode ? '\n\n' + mapperCode : ''))}
               disabled={!javaEntity}
             >
-              {copied ? '✓ 已复制全部代码' : '复制 Entity 代码'}
+              {copiedKey === 'entity' ? '✓ 已复制全部代码' : '复制 Entity 代码'}
             </button>
           </div>
+          {compositePkCols && (
+            <div style={{
+              marginBottom: '0.75rem',
+              padding: '0.65rem 0.9rem',
+              backgroundColor: 'rgba(255, 159, 10, 0.1)',
+              border: '1px solid rgba(255, 159, 10, 0.3)',
+              borderRadius: 'var(--radius-sm)',
+              color: 'var(--text-primary)',
+              fontSize: '0.825rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <span>⚠️</span>
+              <span>
+                <strong>检测到组合主键：</strong> [{compositePkCols.join(', ')}]。MyBatis-Plus 实体类仅支持单一 <code>@TableId</code>，已保留全部字段，建议根据业务指定单主键或抽象复合主键类。
+              </span>
+            </div>
+          )}
           <textarea
             readOnly
             className="apple-textarea"
@@ -434,11 +455,11 @@ export default function SqlToPojo() {
             </label>
             <button
               type="button"
-              className={`apple-btn apple-btn-primary apple-btn-sm ${inCopied ? 'apple-btn-secondary' : ''}`}
+              className={`apple-btn apple-btn-primary apple-btn-sm ${copiedKey === 'inSql' ? 'apple-btn-secondary' : ''}`}
               onClick={handleCopyIn}
               disabled={!formattedInSql}
             >
-              {inCopied ? '✓ 已复制 IN 子句' : '复制 IN 子句'}
+              {copiedKey === 'inSql' ? '✓ 已复制 IN 子句' : '复制 IN 子句'}
             </button>
           </div>
         </div>

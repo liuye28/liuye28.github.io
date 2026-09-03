@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 
 const SAMPLE_CURL = `curl 'https://api.example.com/v1/orders' \\
@@ -220,7 +221,7 @@ fetch('${url}', {
 export default function CurlConverter() {
   const [curlInput, setCurlInput] = useState(SAMPLE_CURL);
   const [targetLang, setTargetLang] = useState('java11');
-  const [copied, setCopied] = useState(false);
+  const [copied, copy] = useCopyToClipboard();
 
   const parsed = useMemo(() => {
     return parseCurl(curlInput);
@@ -232,10 +233,7 @@ export default function CurlConverter() {
 
   const handleCopy = () => {
     if (!outputCode) return;
-    navigator.clipboard.writeText(outputCode).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    copy(outputCode);
   };
 
   return (

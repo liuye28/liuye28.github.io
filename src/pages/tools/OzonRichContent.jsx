@@ -1,5 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { parseRawTextToBlocks, buildOzonRichJson } from '../../utils/ozonParser';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 import './OzonTools.css';
 
@@ -21,245 +23,12 @@ const SAMPLE_RICH_TEXT = `Дизайн и концепция:
 Универсальный теплый трикотаж для сезона осень, зима и ранняя весна. Подходит для повседневной носки, прогулок по городу, кафе, учебы и создания трендового контента.`;
 
 /**
- * 已知标准大标题白名单 (自动优先命中)
- */
-const KNOWN_HEADERS = [
-  'дизайн и концепция',
-  'посадка и тепло',
-  'комфорт и функциональность',
-  'детали и посадка',
-  'с чем сочетать',
-  'идеи для стилизации',
-  'назначение',
-  'материал и уход',
-  'особенности',
-  'преимущества',
-  'стиль и образ',
-  'крой и силуэт',
-  'качество и уход',
-  'детали'
-];
-
-/**
- * 判断某一行是否是真正的“卖点大标题”
- */
-function isMajorSectionHeader(line) {
-  if (!line) return false;
-  const trimmed = line.trim();
-
-  // 1. 包含中文的提示行排除
-  if (/[\u4e00-\u9fa5]/.test(trimmed)) {
-    return false;
-  }
-
-  // 2. 以列表符号或序号开头 (◦, 。, •, -, *, 1., 2. 等) 坚决属于正文子项
-  if (/^[。•·\-*◦oO\d]+[\.\)、\s]/.test(trimmed) || /^[。•·\-*◦]/.test(trimmed)) {
-    return false;
-  }
-
-  // 3. 必须包含英文冒号
-  const colonIdx = trimmed.indexOf(':');
-  if (colonIdx === -1) return false;
-
-  const headerPrefix = trimmed.substring(0, colonIdx).trim().toLowerCase();
-
-  // 4. 白名单标准大标题直接命中 (如 "С чем сочетать:", "Посадка и тепло:" 等)
-  if (KNOWN_HEADERS.includes(headerPrefix)) {
-    return true;
-  }
-
-  // 5. 冒号必须在前 35 个字符内
-  if (colonIdx > 35) return false;
-
-  // 6. 如果整行就是独立的 "大标题:" (冒号后无文字或文字很短)，必定为大标题
-  const afterColon = trimmed.substring(colonIdx + 1).trim();
-  if (!afterColon) {
-    return true;
-  }
-
-  // 7. 如果冒号后紧跟长句说明 (如 "В холодную погоду: отлично смотрится...")，属于子项说明，不是大标题
-  if (afterColon.length > 25) {
-    return false;
-  }
-
-  return true;
-}
-
-/**
- * 智能解析原始卖点文本为区块列表
- */
-function parseRawTextToBlocks(rawText) {
-  if (!rawText.trim()) return [];
-
-  const lines = rawText.split(/\r?\n/);
-  const blocks = [];
-  let currentBlock = null;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const trimmed = line.trim();
-
-    // 跳过纯中文提示行
-    if (/^(中文翻译|俄文|富内容|rich-контент|структурированное описание)/i.test(trimmed)) {
-      continue;
-    }
-
-    // 检查是否是大标题行
-    if (isMajorSectionHeader(trimmed)) {
-      if (currentBlock) {
-        blocks.push(currentBlock);
-      }
-
-      const colonIdx = line.indexOf(':');
-      const title = line.substring(0, colonIdx + 1).trim();
-      const remaining = line.substring(colonIdx + 1).trim();
-
-      currentBlock = {
-        title,
-        textLines: remaining ? [remaining] : []
-      };
-    } else {
-      if (currentBlock) {
-        currentBlock.textLines.push(line);
-      } else {
-        if (trimmed && !/[\u4e00-\u9fa5]/.test(trimmed)) {
-          currentBlock = {
-            title: '',
-            textLines: [line]
-          };
-        }
-      }
-    }
-  }
-
-  if (currentBlock) {
-    blocks.push(currentBlock);
-  }
-
-  return blocks
-    .map((b) => ({
-      title: b.title,
-      text: b.textLines.join('\n').trim()
-    }))
-    .filter((b) => b.title.trim() || b.text.trim());
-}
-
-/**
- * 将正文文本转换为 Ozon 官方标准的 items 数组 (支持 {"type": "br"} 换行)
- */
-function buildTextItems(text) {
-  if (!text || !text.trim()) return [];
-
-  const normalized = text.replace(/\r\n/g, '\n');
-
-  if (normalized.includes('\n')) {
-    const paragraphs = normalized.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean);
-
-    if (paragraphs.length > 1) {
-      const items = [];
-      paragraphs.forEach((p, pIdx) => {
-        const subLines = p.split('\n').map((s) => s.trim()).filter(Boolean);
-        subLines.forEach((sub, sIdx) => {
-          items.push({
-            type: "text",
-            content: sub
-          });
-          if (sIdx < subLines.length - 1) {
-            items.push({ type: "br" });
-          }
-        });
-
-        // 两个段落之间插入两个 br (与 Ozon 官网完全一致)
-        if (pIdx < paragraphs.length - 1) {
-          items.push({ type: "br" });
-          items.push({ type: "br" });
-        }
-      });
-      return items;
-    } else {
-      // 单段内部单行换行
-      const lines = normalized.split('\n').map((s) => s.trim()).filter(Boolean);
-      const items = [];
-      lines.forEach((l, lIdx) => {
-        items.push({
-          type: "text",
-          content: l
-        });
-        if (lIdx < lines.length - 1) {
-          items.push({ type: "br" });
-          items.push({ type: "br" });
-        }
-      });
-      return items;
-    }
-  }
-
-  return [
-    {
-      type: "text",
-      content: text.trim()
-    }
-  ];
-}
-
-/**
- * 根据区块列表构建 Ozon 富内容标准 JSON 对象 (100% 匹配官方富内容编辑器格式)
- */
-function buildOzonRichJson(blocks) {
-  if (!blocks || blocks.length === 0) return null;
-
-  const content = blocks
-    .filter((b) => b.title.trim() || b.text.trim())
-    .map((b) => {
-      const blockObj = {
-        widgetName: "raTextBlock"
-      };
-
-      // 标题结构
-      if (b.title.trim()) {
-        blockObj.title = {
-          items: [
-            {
-              type: "text",
-              content: b.title.trim()
-            }
-          ],
-          size: "size5",
-          color: "color1"
-        };
-      }
-
-      // 官方固定枚举属性
-      blockObj.theme = "primary";
-      blockObj.padding = "type2";
-      blockObj.gapSize = "m";
-
-      // 正文 items 结构 (支持 br 换行)
-      blockObj.text = {
-        size: "size2",
-        align: "left",
-        color: "color1",
-        items: buildTextItems(b.text)
-      };
-
-      return blockObj;
-    });
-
-  if (content.length === 0) return null;
-
-  return {
-    content,
-    version: 0.3
-  };
-}
-
-/**
  * Ozon 富内容生成器页面
  */
 export default function OzonRichContent() {
   const [rawText, setRawText] = useState('');
   const [blocks, setBlocks] = useState([]);
-  const [copied, setCopied] = useState(false);
+  const [copied, copy] = useCopyToClipboard();
 
   // 当原始文本改变时，重新解析同步 blocks
   const handleRawTextChange = (val) => {
@@ -275,10 +44,7 @@ export default function OzonRichContent() {
 
   const handleCopy = () => {
     if (!formattedJson) return;
-    navigator.clipboard.writeText(formattedJson).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    copy(formattedJson);
   };
 
   const handleClear = () => {

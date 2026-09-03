@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { safeSetJSON } from '../utils/storage';
 import './WebTerminal.css';
 
 const WELCOME_MESSAGE = `Ly's Workspace Terminal [Version 2.0.0]
@@ -179,9 +180,7 @@ export default function WebTerminal() {
       case 'theme':
         if (arg === 'dark' || arg === 'light') {
           document.documentElement.setAttribute('data-theme', arg);
-          try {
-            localStorage.setItem('theme_pref', JSON.stringify({ theme: arg, manual: true }));
-          } catch {}
+          safeSetJSON('theme_pref', { theme: arg, manual: true });
           newHistory.push({ type: 'output', text: `已成功切换为 ${arg} 外观。` });
         } else {
           newHistory.push({ type: 'error', text: '用法: theme dark 或 theme light' });

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 
 /**
@@ -29,7 +30,7 @@ export default function Codec() {
   const [inputText, setInputText] = useState('https://github.com/search?q=React 导航站&type=repositories');
   const [outputText, setOutputText] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [copied, copy] = useCopyToClipboard();
 
   useEffect(() => {
     if (!inputText) {
@@ -61,10 +62,7 @@ export default function Codec() {
 
   const handleCopy = () => {
     if (!outputText) return;
-    navigator.clipboard.writeText(outputText).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    copy(outputText);
   };
 
   const handleSwap = () => {

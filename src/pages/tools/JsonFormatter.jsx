@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 
 const SAMPLE_JSON = `{
@@ -28,8 +29,24 @@ export default function JsonFormatter() {
   const [inputJson, setInputJson] = useState('');
   const [formattedJson, setFormattedJson] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [copied, copy] = useCopyToClipboard();
   const [stats, setStats] = useState(null);
+  const inputRef = useRef(null);
+
+  // 快捷键支持：全局 ⌘K / Ctrl+K 聚焦到输入框
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        if (inputRef.current) {
+          inputRef.current.focus();
+          inputRef.current.select();
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (!inputJson.trim()) {
@@ -68,10 +85,7 @@ export default function JsonFormatter() {
 
   const handleCopy = () => {
     if (!formattedJson) return;
-    navigator.clipboard.writeText(formattedJson).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    copy(formattedJson);
   };
 
   const handleMinify = () => {
@@ -142,16 +156,32 @@ export default function JsonFormatter() {
         <div className="tool-grid-2col">
           {/* 左侧：输入框 */}
           <div className="tool-form-group">
-            <label className="tool-form-label" htmlFor="json-input-area">
-              输入 / 粘贴原始 JSON 文本
-            </label>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.45rem' }}>
+              <label className="tool-form-label" htmlFor="json-input-area" style={{ marginBottom: 0 }}>
+                输入 / 粘贴原始 JSON 文本
+              </label>
+              <span className="tool-form-hint" style={{ marginTop: 0 }}>
+                ⌘/Ctrl+K 聚焦 · ⌘/Ctrl+Enter 格式化
+              </span>
+            </div>
             <textarea
               id="json-input-area"
+              ref={inputRef}
               className="apple-textarea"
-              placeholder="在此粘贴或输入 JSON 数据..."
+              placeholder="在此粘贴或输入 JSON 数据 (支持 ⌘/Ctrl+Enter 一键美化)..."
               rows={14}
               value={inputJson}
               onChange={(e) => setInputJson(e.target.value)}
+              onKeyDown={(e) => {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                  e.preventDefault();
+                  if (!inputJson.trim()) return;
+                  try {
+                    const parsed = JSON.parse(inputJson);
+                    setInputJson(JSON.stringify(parsed, null, 2));
+                  } catch {}
+                }
+              }}
               spellCheck="false"
             />
           </div>

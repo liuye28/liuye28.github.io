@@ -36,7 +36,12 @@ export default function ToolLayout({ title, desc, children }) {
         </div>
 
         <div className="tool-page-header">
-          <h2 className="tool-page-title">{title}</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap', marginBottom: '0.35rem' }}>
+            <h2 className="tool-page-title" style={{ marginBottom: 0 }}>{title}</h2>
+            <span className="tool-privacy-badge" title="数据仅在当前浏览器内存中处理，不依赖任何外部后端，绝不上报隐私">
+              🔒 纯本地离线处理
+            </span>
+          </div>
           {desc && <p className="tool-page-desc">{desc}</p>}
         </div>
 

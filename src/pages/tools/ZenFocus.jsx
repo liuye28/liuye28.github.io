@@ -3,6 +3,55 @@ import ToolLayout from '../../components/ToolLayout';
 import './ToolsCommon.css';
 
 /**
+ * Web Audio 原生合成清脆颂钵/风铃提示音 (零资源文件依赖)
+ */
+function playChime(existingCtx) {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContext) return;
+    const ctx = existingCtx || new AudioContext();
+    if (ctx.state === 'suspended') {
+      ctx.resume();
+    }
+
+    const now = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    // 颂钵泛音质感双频正弦波 (D5 587Hz -> A5 880Hz 柔和泛音，2秒自然衰减)
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(587.33, now);
+    osc.frequency.exponentialRampToValueAtTime(880, now + 0.12);
+
+    gain.gain.setValueAtTime(0.001, now);
+    gain.gain.exponentialRampToValueAtTime(0.25, now + 0.05);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + 2.2);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start(now);
+    osc.stop(now + 2.3);
+  } catch (err) {
+    console.warn('播放提示音异常:', err);
+  }
+}
+
+/**
+ * Web Notification 桌面通知触发
+ */
+function sendNotification(title, body) {
+  if (typeof window !== 'undefined' && 'Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification(title, {
+        body,
+        icon: '/favicon.ico'
+      });
+    } catch {}
+  }
+}
+
+/**
  * 极简白噪音专注番茄钟组件 (基于 HTML5 Web Audio 原生合成音效)
  */
 export default function ZenFocus() {
@@ -12,6 +61,10 @@ export default function ZenFocus() {
   const [soundType, setSoundType] = useState('none'); // none, rain, white, brown
   const [volume, setVolume] = useState(0.5);
   const [completedSessions, setCompletedSessions] = useState(0);
+  const [toast, setToast] = useState(null);
+  const [notifyPermission, setNotifyPermission] = useState(() => {
+    return typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'unsupported';
+  });
 
   // Web Audio 上下文引用
   const audioCtxRef = useRef(null);
@@ -32,6 +85,23 @@ export default function ZenFocus() {
     setIsRunning(false);
   };
 
+  // 提示横幅自动消失
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 6000);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  // 请求桌面通知权限
+  const handleToggleNotification = async () => {
+    if (typeof window !== 'undefined' && 'Notification' in window) {
+      if (Notification.permission === 'default') {
+        const perm = await Notification.requestPermission();
+        setNotifyPermission(perm);
+      }
+    }
+  };
+
   // 倒计时核心计时器
   useEffect(() => {
     let timer = null;
@@ -41,17 +111,31 @@ export default function ZenFocus() {
       }, 1000);
     } else if (timeLeft === 0 && isRunning) {
       setIsRunning(false);
+      playChime(audioCtxRef.current);
+
       if (mode === 'focus') {
-        setCompletedSessions((c) => c + 1);
-        alert('🎉 专注周期已达成！休息一下吧。');
-        switchMode('shortBreak');
+        const nextCount = completedSessions + 1;
+        setCompletedSessions(nextCount);
+        sendNotification('🎉 专注周期已达成！', '本次 25 分钟专注已圆满结束，休息一下吧。');
+        setToast({
+          title: '🎉 专注周期已达成！',
+          message: '太棒了，你已完成一段高效专注。起身喝杯水、远眺放松一下吧。',
+          type: 'success'
+        });
+        const nextMode = nextCount % 4 === 0 ? 'longBreak' : 'shortBreak';
+        switchMode(nextMode);
       } else {
-        alert('☕ 休息结束，准备好迎接下一轮专注了吗？');
+        sendNotification('☕ 休息时间结束', '身心已放松，准备好迎接下一轮专注了吗？');
+        setToast({
+          title: '☕ 休息时间结束',
+          message: '休息完毕！调整呼吸，点击“开始专注”迎接新的任务。',
+          type: 'info'
+        });
         switchMode('focus');
       }
     }
     return () => clearInterval(timer);
-  }, [isRunning, timeLeft, mode]);
+  }, [isRunning, timeLeft, mode, completedSessions]);
 
   // Web Audio 原生白噪音/雨声合成器
   useEffect(() => {
@@ -163,6 +247,42 @@ export default function ZenFocus() {
       desc="基于 Apple 极简美学设计，结合 Web Audio 原生算法模拟雨声与白噪音，提供沉浸式高效专注"
     >
       <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+        {/* 沉浸式 Toast 状态通知 */}
+        {toast && (
+          <div
+            style={{
+              marginBottom: '1.5rem',
+              padding: '1rem 1.25rem',
+              backgroundColor: 'var(--bg-surface)',
+              border: '1px solid var(--accent-color)',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-card)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem'
+            }}
+          >
+            <div>
+              <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: '0.2rem', fontSize: '0.95rem' }}>
+                {toast.title}
+              </div>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+                {toast.message}
+              </div>
+            </div>
+            <button
+              type="button"
+              className="apple-btn apple-btn-ghost apple-btn-sm"
+              style={{ padding: '4px 8px', minWidth: 'auto', color: 'var(--text-tertiary)' }}
+              onClick={() => setToast(null)}
+              aria-label="关闭提示"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         {/* 模式切换胶囊 */}
         <div style={{
           display: 'flex',
@@ -252,8 +372,34 @@ export default function ZenFocus() {
             </button>
           </div>
 
-          <div style={{ marginTop: '1.5rem', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            今日已完成专注周期：<strong style={{ color: 'var(--accent-color)' }}>{completedSessions}</strong> 次
+          <div style={{
+            marginTop: '1.5rem',
+            fontSize: '0.85rem',
+            color: 'var(--text-secondary)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '1.25rem',
+            flexWrap: 'wrap'
+          }}>
+            <span>今日已完成专注周期：<strong style={{ color: 'var(--accent-color)' }}>{completedSessions}</strong> 次</span>
+            {typeof window !== 'undefined' && 'Notification' in window && (
+              <button
+                type="button"
+                className="apple-btn apple-btn-ghost apple-btn-sm"
+                style={{
+                  fontSize: '0.8rem',
+                  padding: '2px 10px',
+                  color: notifyPermission === 'granted' ? 'var(--text-secondary)' : 'var(--accent-color)',
+                  cursor: notifyPermission === 'denied' ? 'not-allowed' : 'pointer'
+                }}
+                onClick={handleToggleNotification}
+                disabled={notifyPermission === 'denied'}
+                title={notifyPermission === 'denied' ? '桌面通知已被浏览器禁止，可点击浏览器地址栏图标授权' : '点击开启系统级桌面通知'}
+              >
+                {notifyPermission === 'granted' ? '🔔 桌面通知已开启' : notifyPermission === 'denied' ? '🔕 桌面通知被拦截' : '🔔 开启桌面通知'}
+              </button>
+            )}
           </div>
         </section>
 

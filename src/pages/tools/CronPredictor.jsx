@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 
 // 常用高频预设
@@ -148,83 +149,119 @@ function calculateNextRuns(cronString, count = 10) {
   const hourSet = parseField(hourExpr, 0, 23);
   const monthSet = parseField(monthExpr, 1, 12);
 
+  // 基础字段为空时快速退出
+  if (secSet.size === 0 || minSet.size === 0 || hourSet.size === 0 || monthSet.size === 0) {
+    return [];
+  }
+
+  // 提前预解析日期与星期集合，避免在每次循环内部重复解析与构造 Set
+  const isDayWild = dayExpr === '*' || dayExpr === '?';
+  const isWeekWild = weekExpr === '*' || weekExpr === '?';
+  const daySet = !isDayWild ? parseField(dayExpr, 1, 31) : null;
+  const weekSet = !isWeekWild ? parseField(weekExpr, 1, 7, true) : null;
+
+  if ((daySet && daySet.size === 0) || (weekSet && weekSet.size === 0)) {
+    return [];
+  }
+
+  // 排序供跳跃快速定位
+  const sortedSecs = Array.from(secSet).sort((a, b) => a - b);
+  const sortedMins = Array.from(minSet).sort((a, b) => a - b);
+  const sortedHours = Array.from(hourSet).sort((a, b) => a - b);
+
   const results = [];
   const start = new Date();
   // 从下一秒开始推算
   const current = new Date(start.getTime() + 1000);
   current.setMilliseconds(0);
 
-  // 保护性最大循环步数，防止死循环
+  // 保护性最大循环步数，字段跳跃后数万次足以推算出数年跨度
   let iterations = 0;
-  const maxIterations = 500000;
+  const maxIterations = 50000;
 
   while (results.length < count && iterations < maxIterations) {
     iterations++;
 
-    // 检查月份
+    // 1. 检查月份
     const month = current.getMonth() + 1;
     if (!monthSet.has(month)) {
       current.setMonth(current.getMonth() + 1);
       current.setDate(1);
-      current.setHours(0, 0, 0, 0);
+      current.setHours(sortedHours[0], sortedMins[0], sortedSecs[0], 0);
       continue;
     }
 
-    // 检查日期与星期
+    // 2. 检查日期与星期
     const day = current.getDate();
     const week = current.getDay() + 1; // 1=Sun, 2=Mon... 7=Sat
-
-    const isDayWild = dayExpr === '*' || dayExpr === '?';
-    const isWeekWild = weekExpr === '*' || weekExpr === '?';
 
     let dayMatch = false;
     if (isDayWild && isWeekWild) {
       dayMatch = true;
     } else if (!isDayWild && isWeekWild) {
-      const daySet = parseField(dayExpr, 1, 31);
       dayMatch = daySet.has(day);
     } else if (isDayWild && !isWeekWild) {
-      const weekSet = parseField(weekExpr, 1, 7, true);
       dayMatch = weekSet.has(week);
     } else {
-      // 两者都指定，通常满足其一
-      const daySet = parseField(dayExpr, 1, 31);
-      const weekSet = parseField(weekExpr, 1, 7, true);
       dayMatch = daySet.has(day) || weekSet.has(week);
     }
 
     if (!dayMatch) {
       current.setDate(current.getDate() + 1);
-      current.setHours(0, 0, 0, 0);
+      current.setHours(sortedHours[0], sortedMins[0], sortedSecs[0], 0);
       continue;
     }
 
-    // 检查小时
+    // 3. 检查小时：按字段跳跃
     const hour = current.getHours();
     if (!hourSet.has(hour)) {
-      current.setHours(current.getHours() + 1);
-      current.setMinutes(0, 0, 0);
+      const nextHour = sortedHours.find((h) => h > hour);
+      if (nextHour !== undefined) {
+        current.setHours(nextHour, sortedMins[0], sortedSecs[0], 0);
+      } else {
+        // 当日已无匹配小时，直接跳到明天首个有效时分秒
+        current.setDate(current.getDate() + 1);
+        current.setHours(sortedHours[0], sortedMins[0], sortedSecs[0], 0);
+      }
       continue;
     }
 
-    // 检查分钟
+    // 4. 检查分钟：按字段跳跃
     const min = current.getMinutes();
     if (!minSet.has(min)) {
-      current.setMinutes(current.getMinutes() + 1);
-      current.setSeconds(0, 0);
+      const nextMin = sortedMins.find((m) => m > min);
+      if (nextMin !== undefined) {
+        current.setMinutes(nextMin, sortedSecs[0], 0);
+      } else {
+        // 当前小时已无匹配分钟，直接进位到下一小时
+        current.setHours(current.getHours() + 1, sortedMins[0], sortedSecs[0], 0);
+      }
       continue;
     }
 
-    // 检查秒
+    // 5. 检查秒：按字段跳跃
     const sec = current.getSeconds();
     if (!secSet.has(sec)) {
-      current.setSeconds(current.getSeconds() + 1);
+      const nextSec = sortedSecs.find((s) => s > sec);
+      if (nextSec !== undefined) {
+        current.setSeconds(nextSec);
+      } else {
+        // 当前分钟已无匹配秒，直接进位到下一分钟
+        current.setMinutes(current.getMinutes() + 1, sortedSecs[0], 0);
+      }
       continue;
     }
 
-    // 命中一个执行时间点
+    // 命中一个有效执行时间点
     results.push(new Date(current.getTime()));
-    current.setSeconds(current.getSeconds() + 1);
+
+    // 推进到下一个候选秒数或下一分钟
+    const nextSec = sortedSecs.find((s) => s > sec);
+    if (nextSec !== undefined) {
+      current.setSeconds(nextSec);
+    } else {
+      current.setMinutes(current.getMinutes() + 1, sortedSecs[0], 0);
+    }
   }
 
   return results;
@@ -284,8 +321,8 @@ function translateCronToChinese(cron) {
  */
 export default function CronPredictor() {
   const [cronInput, setCronInput] = useState('0 0/5 * * * ?');
+  const [copied, copy] = useCopyToClipboard();
   const [activeTab, setActiveTab] = useState('sec');
-  const [copied, setCopied] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
 
   // 每秒更新当前时间，保证相对时间跳动
@@ -363,10 +400,7 @@ export default function CronPredictor() {
 
   const handleCopy = () => {
     if (!cronInput) return;
-    navigator.clipboard.writeText(cronInput).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    copy(cronInput);
   };
 
   return (

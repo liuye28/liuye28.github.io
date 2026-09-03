@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { safeGetJSON, safeSetJSON } from '../../utils/storage';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 
 const STORAGE_KEY_NOTES = 'personweb_local_scratchpad_notes';
@@ -43,29 +45,20 @@ function formatTime(ts) {
  */
 export default function LocalScratchpad() {
   const [notes, setNotes] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY_NOTES);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {
-      // 容错读取
+    const parsed = safeGetJSON(STORAGE_KEY_NOTES, null);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed;
     }
     return DEFAULT_NOTES;
   });
 
   const [activeId, setActiveId] = useState(() => (notes[0] ? notes[0].id : null));
   const [searchWord, setSearchWord] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [copied, copy] = useCopyToClipboard();
 
   // 本地存储自动保存
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY_NOTES, JSON.stringify(notes));
-    } catch {
-      // 忽略隐私模式限额
-    }
+    safeSetJSON(STORAGE_KEY_NOTES, notes);
   }, [notes]);
 
   const activeNote = useMemo(() => {
@@ -157,10 +150,7 @@ export default function LocalScratchpad() {
 
   const handleCopyContent = () => {
     if (!activeNote) return;
-    navigator.clipboard.writeText(activeNote.content).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    copy(activeNote.content);
   };
 
   return (

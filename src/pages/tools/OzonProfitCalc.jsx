@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { safeGetItem, safeSetItem } from '../../utils/storage';
 import './ToolsCommon.css';
 
 const STORAGE_KEY_RATE = 'ozon_calc_cny_rub_rate';
@@ -20,11 +21,11 @@ export default function OzonProfitCalc() {
 
   // 汇率 (1 人民币 = X 俄罗斯卢布 RUB)
   const [exchangeRate, setExchangeRate] = useState(() => {
-    return Number(localStorage.getItem(STORAGE_KEY_RATE)) || 12.8;
+    return Number(safeGetItem(STORAGE_KEY_RATE)) || 12.8;
   });
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_RATE, exchangeRate.toString());
+    safeSetItem(STORAGE_KEY_RATE, exchangeRate.toString());
   }, [exchangeRate]);
 
   // 核心核算模型

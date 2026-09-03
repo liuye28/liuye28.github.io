@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Editor from '@monaco-editor/react';
 import ToolLayout from '../../components/ToolLayout';
+import { safeGetItem, safeSetItem, safeGetJSON, safeSetJSON } from '../../utils/storage';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 import './CodePad.css';
 
@@ -117,21 +119,17 @@ function getInitialCodeMap() {
     initialMap[k] = LEETCODE_TEMPLATES[k].template;
   });
 
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY_CODE);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
-          return { ...initialMap, ...parsed };
-        }
-      } catch {
-        // 旧版本平滑向下兼容：如果先前存的是纯文本字符串，默认将其作为 Java 代码保留
-        return { ...initialMap, java: saved };
+  const saved = safeGetItem(STORAGE_KEY_CODE);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+        return { ...initialMap, ...parsed };
       }
+    } catch {
+      // 旧版本平滑向下兼容：如果先前存的是纯文本字符串，默认将其作为 Java 代码保留
+      return { ...initialMap, java: saved };
     }
-  } catch (e) {
-    // ignore error
   }
   return initialMap;
 }
@@ -151,7 +149,7 @@ export default function CodePad() {
   const code = codeMap[currentLang] ?? LEETCODE_TEMPLATES[currentLang]?.template ?? '';
 
   const [problemNotes, setProblemNotes] = useState(() => {
-    return localStorage.getItem(STORAGE_KEY_PROBLEM) || DEFAULT_PROBLEM_TEXT;
+    return safeGetItem(STORAGE_KEY_PROBLEM, DEFAULT_PROBLEM_TEXT);
   });
 
   // 监听全站网页主题变化 (用于 Monaco 编辑器 auto 主题联动)
@@ -174,22 +172,17 @@ export default function CodePad() {
 
   // 配置项：默认自动跟随网页外观、双栏对照、全屏沉浸、字号、小地图、自动换行
   const [config, setConfig] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY_CONFIG);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        return {
-          splitMode: parsed.splitMode !== undefined ? parsed.splitMode : true,
-          zenMode: false, // 每次重新进入默认不全屏
-          theme: parsed.theme || 'auto', // 默认跟随全站外观
-          fontSize: parsed.fontSize || 14,
-          minimap: parsed.minimap !== undefined ? parsed.minimap : false,
-          wordWrap: parsed.wordWrap || 'on',
-          tabSize: parsed.tabSize || 4
-        };
-      } catch (e) {
-        // ignore error
-      }
+    const parsed = safeGetJSON(STORAGE_KEY_CONFIG, null);
+    if (parsed) {
+      return {
+        splitMode: parsed.splitMode !== undefined ? parsed.splitMode : true,
+        zenMode: false, // 每次重新进入默认不全屏
+        theme: parsed.theme || 'auto', // 默认跟随全站外观
+        fontSize: parsed.fontSize || 14,
+        minimap: parsed.minimap !== undefined ? parsed.minimap : false,
+        wordWrap: parsed.wordWrap || 'on',
+        tabSize: parsed.tabSize || 4
+      };
     }
     return {
       splitMode: true,
@@ -202,7 +195,7 @@ export default function CodePad() {
     };
   });
 
-  const [copySuccess, setCopySuccess] = useState(false);
+  const [copySuccess, copyCode] = useCopyToClipboard(2000);
   const [stats, setStats] = useState({ lines: 1, chars: 0 });
 
   // 本地自动持久化：代码统计更新
@@ -212,11 +205,11 @@ export default function CodePad() {
   }, [code]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_PROBLEM, problemNotes);
+    safeSetItem(STORAGE_KEY_PROBLEM, problemNotes);
   }, [problemNotes]);
 
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(config));
+    safeSetJSON(STORAGE_KEY_CONFIG, config);
   }, [config]);
 
   // 全屏模式与分屏切换时，强制通知 Monaco 重新计算尺寸排版（彻底解决退出全屏后尺寸拉伸变形问题）
@@ -343,9 +336,7 @@ export default function CodePad() {
     const updated = newVal ?? '';
     setCodeMap((prev) => {
       const nextMap = { ...prev, [currentLang]: updated };
-      try {
-        localStorage.setItem(STORAGE_KEY_CODE, JSON.stringify(nextMap));
-      } catch (e) {}
+      safeSetJSON(STORAGE_KEY_CODE, nextMap);
       return nextMap;
     });
   }, [currentLang]);
@@ -382,14 +373,8 @@ export default function CodePad() {
   };
 
   // 复制代码
-  const handleCopyCode = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
-    } catch (err) {
-      console.error('复制失败', err);
-    }
+  const handleCopyCode = () => {
+    copyCode(code);
   };
 
   // 清空代码（直接清空）
