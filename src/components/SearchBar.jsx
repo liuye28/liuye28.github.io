@@ -15,6 +15,7 @@ export default function SearchBar({
   keyword,
   onChange,
   onClear,
+  onSubmit,
   placeholder = '搜索或输入网址...',
   ariaLabel = '搜索网站'
 }) {
@@ -38,6 +39,10 @@ export default function SearchBar({
         onClear();
       } else {
         inputRef.current?.blur();
+      }
+    } else if (e.key === 'Enter') {
+      if (onSubmit) {
+        onSubmit(keyword);
       }
     }
   };
