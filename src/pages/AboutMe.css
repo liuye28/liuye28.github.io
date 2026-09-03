@@ -1,120 +1,120 @@
 /* ==========================================================================
-   关于我与技术雷达卡片流样式
+   关于我页面精炼名片样式 (Apple HIG 极简居中卡片布局)
    ========================================================================== */
 
-.about-hero {
-  text-align: center;
-  padding: 3rem 1rem 2.5rem 1rem;
-  max-width: 720px;
-  margin: 0 auto;
+.about-pure-container {
+  max-width: 680px;
+  margin: 3rem auto 4.5rem auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
 }
 
-.about-avatar-box {
-  width: 88px;
-  height: 88px;
+/* 个人身份头像与名称区 */
+.about-profile-hero {
+  text-align: center;
+  margin-bottom: 2.25rem;
+}
+
+.about-avatar-circle {
+  width: 92px;
+  height: 92px;
   margin: 0 auto 1.25rem auto;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--accent-color), #af52de);
+  background: linear-gradient(135deg, #1f6feb 0%, #5856d6 55%, #af52de 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  font-size: 2.2rem;
+  font-size: 2.3rem;
   font-weight: 700;
-  box-shadow: 0 10px 25px rgba(0, 113, 227, 0.25);
+  letter-spacing: -0.02em;
+  box-shadow: 0 12px 30px rgba(88, 86, 214, 0.32);
+  user-select: none;
+  transition: transform 0.3s var(--ease-apple), box-shadow 0.3s var(--ease-apple);
 }
 
-.about-name {
-  font-size: 2rem;
+.about-avatar-circle:hover {
+  transform: scale(1.05);
+  box-shadow: 0 16px 36px rgba(88, 86, 214, 0.42);
+}
+
+.about-profile-name {
+  font-size: 2.1rem;
   font-weight: 700;
+  letter-spacing: -0.035em;
   color: var(--text-primary);
-  margin-bottom: 0.5rem;
+  margin: 0;
+  font-family: var(--font-sans);
 }
 
-.about-tagline {
-  font-size: 1.05rem;
-  color: var(--accent-color);
-  font-weight: 500;
-  margin-bottom: 1rem;
-}
-
-.about-bio {
-  font-size: 0.95rem;
-  line-height: 1.7;
-  color: var(--text-secondary);
-}
-
-/* 技能矩阵卡片网格 */
-.skills-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 1.25rem;
-  margin-top: 1.5rem;
-}
-
-.skill-category-card {
+/* 与我连接独立卡片 */
+.about-connect-card {
+  width: 100%;
   background-color: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
-  padding: 1.5rem;
+  padding: 2.75rem 2rem;
+  text-align: center;
   box-shadow: var(--shadow-card);
   transition: var(--transition-normal);
 }
 
-.skill-category-card:hover {
+.about-connect-card:hover {
   transform: translateY(-2px);
   box-shadow: var(--shadow-card-hover);
 }
 
-.skill-card-title {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  margin-bottom: 1rem;
-}
-
-.skill-pill-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.skill-pill {
-  padding: 4px 12px;
-  background-color: var(--bg-surface-secondary);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-pill);
-  font-size: 0.8rem;
-  font-weight: 500;
-  color: var(--text-primary);
-}
-
-/* 里程碑时间线 */
-.milestone-timeline {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  margin-top: 1rem;
-}
-
-.milestone-item {
-  display: flex;
-  gap: 1rem;
-}
-
-.milestone-year {
-  font-size: 0.85rem;
+.about-connect-title {
+  font-size: 1.3rem;
   font-weight: 700;
-  color: var(--accent-color);
-  min-width: 65px;
-  flex-shrink: 0;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 0.65rem;
 }
 
-.milestone-body {
-  font-size: 0.9rem;
-  color: var(--text-primary);
+.about-connect-desc {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
   line-height: 1.6;
+  margin-bottom: 1.75rem;
+}
+
+.about-action-group {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.about-btn-pill {
+  padding: 0.65rem 1.6rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--transition-fast);
+}
+
+@media (max-width: 600px) {
+  .about-pure-container {
+    margin: 2rem auto 3rem auto;
+    padding: 0 0.5rem;
+  }
+
+  .about-connect-card {
+    padding: 2rem 1.25rem;
+  }
+
+  .about-avatar-circle {
+    width: 80px;
+    height: 80px;
+    font-size: 2rem;
+  }
+
+  .about-profile-name {
+    font-size: 1.75rem;
+  }
 }
