@@ -13,6 +13,19 @@ const HashGenerator = lazy(() => import('./pages/tools/HashGenerator'));
 const CodePad = lazy(() => import('./pages/tools/CodePad'));
 const OzonRichContent = lazy(() => import('./pages/tools/OzonRichContent'));
 const OzonSizeTable = lazy(() => import('./pages/tools/OzonSizeTable'));
+const JsonToJava = lazy(() => import('./pages/tools/JsonToJava'));
+const CronPredictor = lazy(() => import('./pages/tools/CronPredictor'));
+const CheatsheetHome = lazy(() => import('./pages/cheatsheets/CheatsheetHome'));
+const SqlToPojo = lazy(() => import('./pages/tools/SqlToPojo'));
+const DiffViewer = lazy(() => import('./pages/tools/DiffViewer'));
+const JwtDecoder = lazy(() => import('./pages/tools/JwtDecoder'));
+const CurlConverter = lazy(() => import('./pages/tools/CurlConverter'));
+const OzonProfitCalc = lazy(() => import('./pages/tools/OzonProfitCalc'));
+const LocalScratchpad = lazy(() => import('./pages/tools/LocalScratchpad'));
+const ZenFocus = lazy(() => import('./pages/tools/ZenFocus'));
+const AboutMe = lazy(() => import('./pages/AboutMe'));
+
+import WebTerminal from './components/WebTerminal';
 
 /**
  * Apple 极简优雅路由过渡骨架
@@ -65,23 +78,42 @@ export default function App() {
           {/* 小工具板块首页 */}
           <Route path="/tools" element={<ToolsHome />} />
 
+          {/* 技术速查备忘录 */}
+          <Route path="/cheatsheet" element={<CheatsheetHome />} />
+
+          {/* 关于我与技术雷达 */}
+          <Route path="/about" element={<AboutMe />} />
+
           {/* 跨境电商专用工具 */}
           <Route path="/tools/ozon-rich" element={<OzonRichContent />} />
           <Route path="/tools/ozon-size" element={<OzonSizeTable />} />
+          <Route path="/tools/ozon-calc" element={<OzonProfitCalc />} />
 
           {/* 开发者实用通用工具 */}
+          <Route path="/tools/sql-to-pojo" element={<SqlToPojo />} />
+          <Route path="/tools/diff" element={<DiffViewer />} />
           <Route path="/tools/code-pad" element={<CodePad />} />
           <Route path="/tools/timestamp" element={<Timestamp />} />
           <Route path="/tools/json" element={<JsonFormatter />} />
+          <Route path="/tools/json-to-java" element={<JsonToJava />} />
+          <Route path="/tools/cron" element={<CronPredictor />} />
           <Route path="/tools/regex" element={<RegexTester />} />
+          <Route path="/tools/curl" element={<CurlConverter />} />
           <Route path="/tools/base-convert" element={<BaseConvert />} />
           <Route path="/tools/codec" element={<Codec />} />
+          <Route path="/tools/jwt" element={<JwtDecoder />} />
           <Route path="/tools/hash" element={<HashGenerator />} />
+
+          {/* 生产力与专注 */}
+          <Route path="/tools/scratchpad" element={<LocalScratchpad />} />
+          <Route path="/tools/zen-focus" element={<ZenFocus />} />
 
           {/* 兜底路由 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Suspense>
+      {/* 全局极客唤起式终端浮层 */}
+      <WebTerminal />
     </HashRouter>
   );
 }
