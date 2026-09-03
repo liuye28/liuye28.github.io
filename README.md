@@ -38,35 +38,35 @@
 
 ### 🛠️ 2. 实用工具箱 (18 款全功能工具，支持独立路由与分类筛选)
 
-所有工具均在浏览器纯内存与本地 `localStorage` 中执行，绝无网络数据外泄风险。
+所有工具均在浏览器纯内存与本地安全 `localStorage` 中执行，绝无网络数据外泄风险；全工具页面统一标配 **`🔒 纯本地离线处理`** 安全认证徽标。
 
 #### 📦 跨境电商专区 (Ozon 平台全链路辅助)
-- 📄 **Ozon 富内容生成器 (`#/tools/ozon-rich`)**：智能识别商品 4 大核心卖点，一键生成 100% 对齐官方规范的 `raTextBlock` JSON 模板 (`version: 0.3`)。
+- 📄 **Ozon 富内容生成器 (`#/tools/ozon-rich`)**：智能识别商品 4 大核心卖点，解耦底层解析逻辑，一键生成 100% 对齐官方规范的 `raTextBlock` JSON 模板 (`version: 0.3`)。
 - 📊 **Ozon 尺码表生成器 (`#/tools/ozon-size`)**：支持从 Excel 表格直接复制粘贴，全自动净化中文字符并标准化俄文表头，生成 RU+INT 双行对照表与平台标准的 `tcTable` JSON 结构。
 - 💰 **Ozon 利润与定价计算器 (`#/tools/ozon-calc`)**：采购成本、商品克重、中俄跨境干线物流、平台类目扣点与损耗全链路联动，科学测算建议卢布零售价与保本底线。
 
 #### 💻 后端开发与调试工具
-- ☕ **SQL DDL 转 MyBatis-Plus (`#/tools/sql-to-pojo`)**：浏览器端解析 MySQL 建表 DDL 语句，自动生成带 `@TableName`、`@TableId`、`@TableField` 的 POJO 实体类与 Mapper 接口，附带 SQL `IN (...)` 批量查询格式化助手。
+- ☕ **SQL DDL 转 MyBatis-Plus (`#/tools/sql-to-pojo`)**：浏览器端解析 MySQL 建表 DDL 语句，自动生成带 `@TableName`、`@TableId`、`@TableField` 的 POJO 实体类与 Mapper 接口；支持准确识别**复合主键 / 联合索引**并给出架构调整告警指引，附带 SQL `IN (...)` 批量查询格式化助手。
 - ⚖️ **Monaco 代码/文本 Diff 对比器 (`#/tools/diff`)**：内嵌 VS Code Monaco Editor 内核，专业高亮对比两段文本、JSON、YAML 或 Java 代码的行级增删差异。
 - ☕ **JSON 转 Java POJO / Lombok (`#/tools/json-to-java`)**：纯前端递归推导复杂 JSON 结构，支持自动生成带 Lombok 注解、Jackson 序列化属性以及嵌套静态内部类。
-- ⏰ **Cron 表达式生成与预测器 (`#/tools/cron`)**：提供可视化秒/分/时/日/月/周配置向导，支持解析 Spring 与 Linux Cron 表达式，附带自然语言释义与未来 10 次执行时刻推算。
-- 📝 **代码练习板 (`#/tools/code-pad`)**：Monaco Editor 驱动，预置 Java、Python、C++、Go 算法答题骨架，支持代码临时暂存与重置。
+- ⏰ **Cron 表达式生成与预测器 (`#/tools/cron`)**：提供可视化秒/分/时/日/月/周配置向导，支持解析 Spring 与 Linux Cron 表达式；采用**字段级跳跃推算算法**，告别逐秒暴力循环，亚毫秒级计算未来 10 次执行时刻与中文自然语言释义。
+- 📝 **代码练习板 (`#/tools/code-pad`)**：Monaco Editor 驱动，预置 Java、Python、C++、Go 算法答题骨架，支持代码草稿本地持久化暂存与一键重置。
 - ⏱️ **时间戳转换器 (`#/tools/timestamp`)**：秒级/毫秒级 Unix 时间戳自动识别，支持双向转换为本地时间、莫斯科时区时间 (MSK / UTC+3) 与相对自然语言时间。
-- 🎯 **正则表达式测试器 (`#/tools/regex`)**：支持修饰符多选、预设高频正则模板、实时语法匹配高亮与捕获组索引详情。
+- 🎯 **正则表达式测试器 (`#/tools/regex`)**：支持修饰符多选、预设高频正则模板、实时语法匹配高亮与捕获组索引详情，支持 `⌘K` / `Ctrl+K` 快速聚焦与一键复制匹配项。
 - 🌐 **cURL 转多语言代码 (`#/tools/curl`)**：快速解析浏览器 Network 导出的 cURL 命令，一键转为 Java HttpClient、Spring RestTemplate、OkHttp 或 JS Fetch 代码。
 
 #### 🔄 编码与转换工具
-- 📦 **JSON 格式化 / 校验器 (`#/tools/json`)**：双栏实时排版，2 空格优雅缩进美化、紧凑压缩与报错行号精确定位。
+- 📦 **JSON 格式化 / 校验器 (`#/tools/json`)**：双栏实时排版，2 空格优雅缩进美化、紧凑压缩与报错行号精确定位；深度适配极客快捷键，支持 `⌘K` / `Ctrl+K` 聚焦输入框与 `⌘/Ctrl + Enter` 一键校验美化。
 - 🔤 **URL / Base64 编解码器 (`#/tools/codec`)**：双向编解码转换，原生支持 UTF-8 中文编码防乱码。
 - 🔑 **JWT 离线安全解码器 (`#/tools/jwt`)**：纯内存解码 Header 与 Payload Claims，自动解析过期时间戳并呈现倒计时状态，数据永不离端。
 
 #### 🛡️ 安全与计算工具
 - 🔢 **进制转换器 (`#/tools/base-convert`)**：支持二进制、八进制、十进制、十六进制实时互转，借助 BigInt 保证大整数计算精度。
-- 🔑 **哈希与 UUID 生成器 (`#/tools/hash`)**：基于原生 Web Crypto API 极速计算 SHA-256、SHA-512、SHA-1，支持标准 UUID v4 批量生成。
+- 🔑 **哈希与 UUID 生成器 (`#/tools/hash`)**：基于原生 Web Crypto API 极速计算 SHA-256、SHA-512、SHA-1，内置独立纯 JS MD5 算法引擎，支持标准 UUID v4 批量生成。
 
 #### ☕ 生产力与专注
-- 📝 **Apple Notes 极简便签 (`#/tools/scratchpad`)**：模拟便签纸交互，纯本地 `localStorage` 自动落盘，随手记临时配置、日志 ID 或碎片想法，支持 JSON 全量导入导出备份。
-- ⏱️ **极简白噪音专注番茄钟 (`#/tools/zen-focus`)**：经典 25+5 分钟环形番茄钟，基于 Web Audio 原生算法合成细雨白噪音，0 外部音频带宽开销。
+- 📝 **Apple Notes 极简便签 (`#/tools/scratchpad`)**：模拟便签纸交互，通过统一安全存储模块自动落盘，随手记临时配置、日志 ID 或碎片想法，支持 JSON 全量导入导出备份。
+- ⏱️ **极简白噪音专注番茄钟 (`#/tools/zen-focus`)**：经典 25+5 分钟环形番茄钟，基于 Web Audio 原生算法合成细雨白噪音与自然衰减颂钵提示音；集成系统级桌面通知 (Web Notification) 与站内优雅 Toast 横幅，彻底杜绝阻断性原生 alert 弹窗，0 外部音频文件网络开销。
 
 ---
 
@@ -130,7 +130,8 @@ personWeb/
 │   │   ├── sites.js              # 常用网站分类与链接数据源
 │   │   └── tools.js              # 18 款小工具元数据与路由配置
 │   ├── hooks/
-│   │   └── useCategoryFilter.js  # 分类过滤与搜索高亮自定义 Hook
+│   │   ├── useCategoryFilter.js  # 分类过滤与搜索高亮自定义 Hook
+│   │   └── useCopyToClipboard.js # 剪贴板一键复制、多键位支持与定时自动复位通用 Hook
 │   ├── pages/                    # 页面视图组件
 │   │   ├── Home.jsx              # 网站导航首页
 │   │   ├── AboutMe.jsx           # 关于我极简名片页
@@ -139,6 +140,9 @@ personWeb/
 │   ├── styles/
 │   │   └── shared.css            # Apple HIG 变量规范体系与全局样式
 │   ├── utils/
+│   │   ├── md5.js                # 纯 JS 离线 MD5 摘要计算实现 (独立无外部依赖)
+│   │   ├── ozonParser.js         # Ozon 尺码表与富内容核心标准化解析与构建引擎
+│   │   ├── storage.js            # 全局统一安全容错 localStorage 存储与 JSON 包装器
 │   │   └── url.js                # URL 标准化与 Favicon 获取逻辑
 │   ├── App.jsx                   # 根路由配置 (HashRouter + Code Splitting 懒加载)
 │   ├── main.jsx                  # React 挂载入口
@@ -161,7 +165,8 @@ personWeb/
 | **代码编辑** | Monaco Editor | VS Code 核心编辑器内核 (`@monaco-editor/react`) |
 | **文档解析** | Marked 18.0 | 高性能纯前端 Markdown 解析器 |
 | **样式体系** | 纯 CSS (Apple HIG) | 基于 CSS Custom Properties 设计变量，零沉重第三方 UI 库依赖 |
-| **声学合成** | Web Audio API | 原生算法生成专注白噪音，无需加载体积庞大的 MP3 音频文件 |
+| **声学与提醒** | Web Audio & Notification | 原生振荡器算法合成白噪音与颂钵提示音，结合系统级桌面通知，0 外部音频带宽开销 |
+| **存储安全** | 容错 Safe Storage | 封装原生 `localStorage`，兼顾 Safari 隐私无痕模式与存储超限容错保护 |
 | **持续集成** | GitHub Actions | 自动化 CI/CD 打包并一键发布至 GitHub Pages |
 
 ---
@@ -211,8 +216,9 @@ npm run preview
 
 ## 🔒 隐私与安全性
 
-- **100% 本地运算**：无论是 SQL DDL 转换、JSON 转换、JWT 解密还是 cURL 抓包转换，所有数据均在浏览器沙箱内存中处理，**不向任何第三方或云端接口发送内容**。
-- **本地存储保障**：便签记事本与主题偏好使用浏览器原生 `localStorage` 离线存储，数据完全由用户本地掌控。
+- **100% 纯本地离线运算**：全工具统一标配 `🔒 纯本地离线处理` 安全认证，无论是 SQL DDL 转换、JSON 转换、JWT 解码、Hash 计算还是 cURL 转换，所有数据均仅在浏览器沙箱内存中瞬时处理，**不设任何后端接收服务、不向任何云端第三方发送用户内容与操作日志**。
+- **容错存储保障 (Safe Storage)**：便签记事本、代码练习板草稿与主题偏好通过定制封装的安全存储接口读写，即使在 Safari 无痕浏览、第三方 Storage 权限受限或存储配额已满等严苛环境下依然稳健运行，数据绝不上云。
+- **纯原生算法实现**：MD5、白噪音声学、自然衰减颂钵泛音等均采用原生纯 JS / Web Audio API 计算合成，零外部音频与字体等敏感资源外链。
 
 ---
 
