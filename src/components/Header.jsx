@@ -124,9 +124,46 @@ export default function Header() {
         >
           小工具
         </NavLink>
+        <NavLink
+          to="/cheatsheet"
+          className={({ isActive }) =>
+            `header-nav-item ${isActive ? 'active' : ''}`
+          }
+        >
+          技术速查
+        </NavLink>
+        <NavLink
+          to="/about"
+          className={({ isActive }) =>
+            `header-nav-item ${isActive ? 'active' : ''}`
+          }
+        >
+          关于我
+        </NavLink>
       </nav>
 
       <div className="header-actions">
+        <button
+          type="button"
+          className="theme-control-btn"
+          onClick={() => window.toggleWebTerminal?.()}
+          aria-label="唤起极客终端 (`)"
+          title="唤起极客终端 (快捷键 `)"
+        >
+          <svg
+            className="theme-icon"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <polyline points="4 17 10 11 4 5" />
+            <line x1="12" y1="19" x2="20" y2="19" />
+          </svg>
+        </button>
+
         <button
           className="theme-control-btn"
           onClick={toggleTheme}
