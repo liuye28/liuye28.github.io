@@ -26,6 +26,7 @@ const ZenFocus = lazy(() => import('./pages/tools/ZenFocus'));
 const AboutMe = lazy(() => import('./pages/AboutMe'));
 
 import WebTerminal from './components/WebTerminal';
+import ErrorBoundary from './components/ErrorBoundary';
 
 /**
  * Apple 极简优雅路由过渡骨架
@@ -70,48 +71,50 @@ function RouteLoadingFallback() {
 export default function App() {
   return (
     <HashRouter>
-      <Suspense fallback={<RouteLoadingFallback />}>
-        <Routes>
-          {/* 网站导航主页 */}
-          <Route path="/" element={<Home />} />
+      <ErrorBoundary>
+        <Suspense fallback={<RouteLoadingFallback />}>
+          <Routes>
+            {/* 网站导航主页 */}
+            <Route path="/" element={<Home />} />
 
-          {/* 小工具板块首页 */}
-          <Route path="/tools" element={<ToolsHome />} />
+            {/* 小工具板块首页 */}
+            <Route path="/tools" element={<ToolsHome />} />
 
-          {/* 技术速查备忘录 */}
-          <Route path="/cheatsheet" element={<CheatsheetHome />} />
+            {/* 技术速查备忘录 */}
+            <Route path="/cheatsheet" element={<CheatsheetHome />} />
 
-          {/* 关于我与技术雷达 */}
-          <Route path="/about" element={<AboutMe />} />
+            {/* 关于我与技术雷达 */}
+            <Route path="/about" element={<AboutMe />} />
 
-          {/* 跨境电商专用工具 */}
-          <Route path="/tools/ozon-rich" element={<OzonRichContent />} />
-          <Route path="/tools/ozon-size" element={<OzonSizeTable />} />
-          <Route path="/tools/ozon-calc" element={<OzonProfitCalc />} />
+            {/* 跨境电商专用工具 */}
+            <Route path="/tools/ozon-rich" element={<OzonRichContent />} />
+            <Route path="/tools/ozon-size" element={<OzonSizeTable />} />
+            <Route path="/tools/ozon-calc" element={<OzonProfitCalc />} />
 
-          {/* 开发者实用通用工具 */}
-          <Route path="/tools/sql-to-pojo" element={<SqlToPojo />} />
-          <Route path="/tools/diff" element={<DiffViewer />} />
-          <Route path="/tools/code-pad" element={<CodePad />} />
-          <Route path="/tools/timestamp" element={<Timestamp />} />
-          <Route path="/tools/json" element={<JsonFormatter />} />
-          <Route path="/tools/json-to-java" element={<JsonToJava />} />
-          <Route path="/tools/cron" element={<CronPredictor />} />
-          <Route path="/tools/regex" element={<RegexTester />} />
-          <Route path="/tools/curl" element={<CurlConverter />} />
-          <Route path="/tools/base-convert" element={<BaseConvert />} />
-          <Route path="/tools/codec" element={<Codec />} />
-          <Route path="/tools/jwt" element={<JwtDecoder />} />
-          <Route path="/tools/hash" element={<HashGenerator />} />
+            {/* 开发者实用通用工具 */}
+            <Route path="/tools/sql-to-pojo" element={<SqlToPojo />} />
+            <Route path="/tools/diff" element={<DiffViewer />} />
+            <Route path="/tools/code-pad" element={<CodePad />} />
+            <Route path="/tools/timestamp" element={<Timestamp />} />
+            <Route path="/tools/json" element={<JsonFormatter />} />
+            <Route path="/tools/json-to-java" element={<JsonToJava />} />
+            <Route path="/tools/cron" element={<CronPredictor />} />
+            <Route path="/tools/regex" element={<RegexTester />} />
+            <Route path="/tools/curl" element={<CurlConverter />} />
+            <Route path="/tools/base-convert" element={<BaseConvert />} />
+            <Route path="/tools/codec" element={<Codec />} />
+            <Route path="/tools/jwt" element={<JwtDecoder />} />
+            <Route path="/tools/hash" element={<HashGenerator />} />
 
-          {/* 生产力与专注 */}
-          <Route path="/tools/scratchpad" element={<LocalScratchpad />} />
-          <Route path="/tools/zen-focus" element={<ZenFocus />} />
+            {/* 生产力与专注 */}
+            <Route path="/tools/scratchpad" element={<LocalScratchpad />} />
+            <Route path="/tools/zen-focus" element={<ZenFocus />} />
 
-          {/* 兜底路由 */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-      </Suspense>
+            {/* 兜底路由 */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Suspense>
+      </ErrorBoundary>
       {/* 全局极客唤起式终端浮层 */}
       <WebTerminal />
     </HashRouter>

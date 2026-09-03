@@ -7,6 +7,14 @@
  * 3. JSON 序列化与反序列化的冗余 try-catch 样板代码
  */
 
+const isDev = Boolean(import.meta.env?.DEV);
+
+function logWarn(...args) {
+  if (isDev) {
+    console.warn(...args);
+  }
+}
+
 /**
  * 安全读取 localStorage 原始字符串
  *
@@ -19,7 +27,7 @@ export function safeGetItem(key, fallback = null) {
     const val = localStorage.getItem(key);
     return val !== null ? val : fallback;
   } catch (err) {
-    console.warn(`[storage] 读取 key "${key}" 失败:`, err);
+    logWarn(`[storage] 读取 key "${key}" 失败:`, err);
     return fallback;
   }
 }
@@ -36,7 +44,7 @@ export function safeSetItem(key, value) {
     localStorage.setItem(key, String(value));
     return true;
   } catch (err) {
-    console.warn(`[storage] 写入 key "${key}" 失败:`, err);
+    logWarn(`[storage] 写入 key "${key}" 失败:`, err);
     return false;
   }
 }
@@ -52,7 +60,7 @@ export function safeRemoveItem(key) {
     localStorage.removeItem(key);
     return true;
   } catch (err) {
-    console.warn(`[storage] 移除 key "${key}" 失败:`, err);
+    logWarn(`[storage] 移除 key "${key}" 失败:`, err);
     return false;
   }
 }
@@ -71,7 +79,7 @@ export function safeGetJSON(key, fallback = null) {
     if (raw === null) return fallback;
     return JSON.parse(raw);
   } catch (err) {
-    console.warn(`[storage] 解析 key "${key}" 的 JSON 数据失败:`, err);
+    logWarn(`[storage] 解析 key "${key}" 的 JSON 数据失败:`, err);
     return fallback;
   }
 }
@@ -88,7 +96,7 @@ export function safeSetJSON(key, value) {
     const serialized = JSON.stringify(value);
     return safeSetItem(key, serialized);
   } catch (err) {
-    console.warn(`[storage] 序列化 key "${key}" 失败:`, err);
+    logWarn(`[storage] 序列化 key "${key}" 失败:`, err);
     return false;
   }
 }

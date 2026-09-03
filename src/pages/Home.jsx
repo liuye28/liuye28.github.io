@@ -4,6 +4,7 @@ import SearchBar from '../components/SearchBar';
 import CategoryTabs from '../components/CategoryTabs';
 import SiteGrid from '../components/SiteGrid';
 import { useCategoryFilter } from '../hooks/useCategoryFilter';
+import usePageTitle from '../hooks/usePageTitle';
 import { categories, sites } from '../data/sites';
 import './Home.css';
 
@@ -11,6 +12,7 @@ import './Home.css';
  * 首页独立视图组件 (Apple HIG 风格)
  */
 export default function Home() {
+  usePageTitle('Ly - 常用网站与效率工具导航', false);
   const [keyword, setKeyword] = useState('');
   const [activeCategory, setActiveCategory] = useState('全部');
 

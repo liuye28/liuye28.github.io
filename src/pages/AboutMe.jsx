@@ -1,11 +1,13 @@
 import React from 'react';
 import Header from '../components/Header';
+import usePageTitle from '../hooks/usePageTitle';
 import './AboutMe.css';
 
 /**
  * 关于我页面 (精炼极简名片版)
  */
 export default function AboutMe() {
+  usePageTitle('关于我');
   return (
     <main className="apple-home-wrapper">
       <div className="apple-home-content">
