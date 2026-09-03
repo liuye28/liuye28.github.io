@@ -6,6 +6,31 @@
     <title>Ly</title>
     <meta name="description" content="Ly 的个人常用网站与效率工具导航" />
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><circle cx=%2250%22 cy=%2250%22 r=%2244%22 fill=%22%230071e3%22/><text x=%2250%22 y=%2266%22 font-size=%2246%22 font-family=%22system-ui, -apple-system, sans-serif%22 font-weight=%22700%22 fill=%22white%22 text-anchor=%22middle%22>L</text></svg>" />
+    <script>
+      (function() {
+        try {
+          var theme = null;
+          var saved = localStorage.getItem('theme_pref');
+          if (saved) {
+            var parsed = JSON.parse(saved);
+            if (parsed && (parsed.theme === 'dark' || parsed.theme === 'light')) {
+              theme = parsed.theme;
+            }
+          }
+          if (!theme) {
+            var oldTheme = localStorage.getItem('theme_preference');
+            if (oldTheme === 'dark' || oldTheme === 'light') {
+              theme = oldTheme;
+            }
+          }
+          if (!theme) {
+            var prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+            theme = prefersDark ? 'dark' : 'light';
+          }
+          document.documentElement.setAttribute('data-theme', theme);
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

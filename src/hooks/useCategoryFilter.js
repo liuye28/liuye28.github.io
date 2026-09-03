@@ -42,11 +42,14 @@ export function useCategoryFilter(list = [], { keyword = '', activeCategory = '�
       const matchesCategory =
         activeCategory === '全部' || item.category === activeCategory;
 
-      // 关键词匹配条件 (不区分大小写，匹配 name 与 desc 字段)
+      // 关键词匹配条件 (不区分大小写，支持匹配 name、desc、url/path 域名及自定义 keywords 字段)
+      const cleanUrl = (item.url || item.path || '').toLowerCase().replace(/^(https?:\/\/)?(www\.)?/, '');
       const matchesSearch =
         !cleanKeyword ||
         (item.name && item.name.toLowerCase().includes(cleanKeyword)) ||
-        (item.desc && item.desc.toLowerCase().includes(cleanKeyword));
+        (item.desc && item.desc.toLowerCase().includes(cleanKeyword)) ||
+        (cleanUrl && cleanUrl.includes(cleanKeyword)) ||
+        (Array.isArray(item.keywords) && item.keywords.some((k) => k.toLowerCase().includes(cleanKeyword)));
 
       return matchesCategory && matchesSearch;
     });

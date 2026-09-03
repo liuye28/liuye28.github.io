@@ -19,6 +19,54 @@ function formatDateTime(date) {
 }
 
 /**
+ * 格式化为莫斯科时间 (MSK, UTC+3，Ozon 跨境电商平台标准时区)
+ */
+function formatMoscowTime(date) {
+  if (isNaN(date.getTime())) return null;
+  try {
+    const formatter = new Intl.DateTimeFormat('zh-CN', {
+      timeZone: 'Europe/Moscow',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    return formatter.format(date).replace(/\//g, '-');
+  } catch {
+    const utcMs = date.getTime() + date.getTimezoneOffset() * 60000;
+    const mskDate = new Date(utcMs + 3 * 3600000);
+    return formatDateTime(mskDate);
+  }
+}
+
+/**
+ * 计算相对友好时间（如刚刚、5分钟前）
+ */
+function getRelativeTime(date) {
+  if (isNaN(date.getTime())) return null;
+  const now = Date.now();
+  const diffSec = Math.floor((now - date.getTime()) / 1000);
+  const isPast = diffSec >= 0;
+  const absSec = Math.abs(diffSec);
+
+  if (absSec < 10) return '刚刚';
+  if (absSec < 60) return isPast ? `${absSec} 秒前` : `${absSec} 秒后`;
+  const diffMin = Math.floor(absSec / 60);
+  if (diffMin < 60) return isPast ? `${diffMin} 分钟前` : `${diffMin} 分钟后`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return isPast ? `${diffHour} 小时前` : `${diffHour} 小时后`;
+  const diffDay = Math.floor(diffHour / 24);
+  if (diffDay < 30) return isPast ? `${diffDay} 天前` : `${diffDay} 天后`;
+  const diffMonth = Math.floor(diffDay / 30);
+  if (diffMonth < 12) return isPast ? `${diffMonth} 个月前` : `${diffMonth} 个月后`;
+  const diffYear = Math.floor(diffDay / 365);
+  return isPast ? `${diffYear} 年前` : `${diffYear} 年后`;
+}
+
+/**
  * 时间戳转换器页面
  */
 export default function Timestamp() {
@@ -79,8 +127,10 @@ export default function Timestamp() {
     setTsResult({
       unit: isSeconds ? '秒 (10位)' : '毫秒 (13位)',
       local: formatDateTime(date),
+      msk: formatMoscowTime(date),
       utc: date.toUTCString(),
-      iso: date.toISOString()
+      iso: date.toISOString(),
+      relative: getRelativeTime(date)
     });
   }, [inputTs]);
 
@@ -169,6 +219,30 @@ export default function Timestamp() {
               {copiedKey === 'now-ms' ? '已复制' : '复制'}
             </button>
           </div>
+
+          <div className="tool-result-item">
+            <span className="tool-result-label">莫斯科时间 (MSK / UTC+3)</span>
+            <span className="tool-result-value">{formatMoscowTime(new Date(currentNow))}</span>
+            <button
+              type="button"
+              className={`apple-copy-btn ${copiedKey === 'now-msk' ? 'copied' : ''}`}
+              onClick={() => copyToClipboard(formatMoscowTime(new Date(currentNow)), 'now-msk')}
+            >
+              {copiedKey === 'now-msk' ? '已复制' : '复制'}
+            </button>
+          </div>
+
+          <div className="tool-result-item">
+            <span className="tool-result-label">本地时间</span>
+            <span className="tool-result-value">{formatDateTime(new Date(currentNow))}</span>
+            <button
+              type="button"
+              className={`apple-copy-btn ${copiedKey === 'now-local' ? 'copied' : ''}`}
+              onClick={() => copyToClipboard(formatDateTime(new Date(currentNow)), 'now-local')}
+            >
+              {copiedKey === 'now-local' ? '已复制' : '复制'}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -223,6 +297,28 @@ export default function Timestamp() {
                 onClick={() => copyToClipboard(tsResult.local, 'ts-local')}
               >
                 {copiedKey === 'ts-local' ? '已复制' : '复制'}
+              </button>
+            </div>
+            <div className="tool-result-item">
+              <span className="tool-result-label">莫斯科时间 (MSK / UTC+3)</span>
+              <span className="tool-result-value">{tsResult.msk}</span>
+              <button
+                type="button"
+                className={`apple-copy-btn ${copiedKey === 'ts-msk' ? 'copied' : ''}`}
+                onClick={() => copyToClipboard(tsResult.msk, 'ts-msk')}
+              >
+                {copiedKey === 'ts-msk' ? '已复制' : '复制'}
+              </button>
+            </div>
+            <div className="tool-result-item">
+              <span className="tool-result-label">相对时间</span>
+              <span className="tool-result-value">{tsResult.relative}</span>
+              <button
+                type="button"
+                className={`apple-copy-btn ${copiedKey === 'ts-rel' ? 'copied' : ''}`}
+                onClick={() => copyToClipboard(tsResult.relative, 'ts-rel')}
+              >
+                {copiedKey === 'ts-rel' ? '已复制' : '复制'}
               </button>
             </div>
             <div className="tool-result-item">

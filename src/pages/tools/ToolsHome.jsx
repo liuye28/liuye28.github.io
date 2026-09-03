@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header';
 import SearchBar from '../../components/SearchBar';
 import CategoryTabs from '../../components/CategoryTabs';
@@ -92,6 +92,7 @@ function ToolIcon({ type }) {
  * 小工具板块首页
  */
 export default function ToolsHome() {
+  const navigate = useNavigate();
   const [keyword, setKeyword] = useState('');
   const [activeCategory, setActiveCategory] = useState('全部');
 
@@ -107,6 +108,13 @@ export default function ToolsHome() {
     setActiveCategory('全部');
   };
 
+  // 支持回车直接进入匹配的第一个工具页面
+  const handleSearchSubmit = () => {
+    if (filteredTools && filteredTools.length > 0) {
+      navigate(filteredTools[0].path);
+    }
+  };
+
   return (
     <main className="apple-home-wrapper">
       <div className="apple-home-content">
@@ -116,6 +124,7 @@ export default function ToolsHome() {
           keyword={keyword}
           onChange={setKeyword}
           onClear={() => setKeyword('')}
+          onSubmit={handleSearchSubmit}
           placeholder="搜索小工具名称或功能描述..."
           ariaLabel="搜索小工具"
         />

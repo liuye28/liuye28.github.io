@@ -26,6 +26,13 @@ export default function Home() {
     setActiveCategory('全部');
   };
 
+  // 支持按下 Enter 回车直接在新标签页打开匹配的第一条网站
+  const handleSearchSubmit = () => {
+    if (filteredSites && filteredSites.length > 0) {
+      window.open(filteredSites[0].url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
   return (
     <main className="apple-home-wrapper">
       <div className="apple-home-content">
@@ -35,6 +42,7 @@ export default function Home() {
           keyword={keyword}
           onChange={setKeyword}
           onClear={() => setKeyword('')}
+          onSubmit={handleSearchSubmit}
         />
 
         <CategoryTabs

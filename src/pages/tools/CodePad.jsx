@@ -109,24 +109,70 @@ const DEFAULT_PROBLEM_TEXT = `【题目描述】
 `;
 
 /**
+ * 获取初始多语言代码映射字典 (各语言独立存储，草稿互不干扰)
+ */
+function getInitialCodeMap() {
+  const initialMap = {};
+  Object.keys(LEETCODE_TEMPLATES).forEach((k) => {
+    initialMap[k] = LEETCODE_TEMPLATES[k].template;
+  });
+
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY_CODE);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) {
+          return { ...initialMap, ...parsed };
+        }
+      } catch {
+        // 旧版本平滑向下兼容：如果先前存的是纯文本字符串，默认将其作为 Java 代码保留
+        return { ...initialMap, java: saved };
+      }
+    }
+  } catch (e) {
+    // ignore error
+  }
+  return initialMap;
+}
+
+/**
  * LeetCode 风格专业代码练习板 (Powered by Monaco Editor)
  */
 export default function CodePad() {
   const editorRef = useRef(null);
   const monacoRef = useRef(null);
 
-  // 语言选择与代码内容
+  // 语言选择与各语言独立代码内容
   const [currentLang, setCurrentLang] = useState('java');
+  const [codeMap, setCodeMap] = useState(getInitialCodeMap);
 
-  const [code, setCode] = useState(() => {
-    return localStorage.getItem(STORAGE_KEY_CODE) || LEETCODE_TEMPLATES.java.template;
-  });
+  // 当前语言的代码内容
+  const code = codeMap[currentLang] ?? LEETCODE_TEMPLATES[currentLang]?.template ?? '';
 
   const [problemNotes, setProblemNotes] = useState(() => {
     return localStorage.getItem(STORAGE_KEY_PROBLEM) || DEFAULT_PROBLEM_TEXT;
   });
 
-  // 配置项：默认浅色、双栏对照、全屏沉浸、字号、小地图、自动换行
+  // 监听全站网页主题变化 (用于 Monaco 编辑器 auto 主题联动)
+  const [globalTheme, setGlobalTheme] = useState(() => {
+    if (typeof document !== 'undefined') {
+      return document.documentElement.getAttribute('data-theme') || 'light';
+    }
+    return 'light';
+  });
+
+  useEffect(() => {
+    const handleMutation = () => {
+      const t = document.documentElement.getAttribute('data-theme') || 'light';
+      setGlobalTheme(t);
+    };
+    const observer = new MutationObserver(handleMutation);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  }, []);
+
+  // 配置项：默认自动跟随网页外观、双栏对照、全屏沉浸、字号、小地图、自动换行
   const [config, setConfig] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY_CONFIG);
     if (saved) {
@@ -135,7 +181,7 @@ export default function CodePad() {
         return {
           splitMode: parsed.splitMode !== undefined ? parsed.splitMode : true,
           zenMode: false, // 每次重新进入默认不全屏
-          theme: parsed.theme || 'light', // 默认浅色
+          theme: parsed.theme || 'auto', // 默认跟随全站外观
           fontSize: parsed.fontSize || 14,
           minimap: parsed.minimap !== undefined ? parsed.minimap : false,
           wordWrap: parsed.wordWrap || 'on',
@@ -148,7 +194,7 @@ export default function CodePad() {
     return {
       splitMode: true,
       zenMode: false,
-      theme: 'light', // 默认浅色
+      theme: 'auto',
       fontSize: 14,
       minimap: false,
       wordWrap: 'on',
@@ -159,9 +205,8 @@ export default function CodePad() {
   const [copySuccess, setCopySuccess] = useState(false);
   const [stats, setStats] = useState({ lines: 1, chars: 0 });
 
-  // 本地自动持久化
+  // 本地自动持久化：代码统计更新
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY_CODE, code || '');
     const lines = (code || '').split('\n').length;
     setStats({ lines, chars: (code || '').length });
   }, [code]);
@@ -267,36 +312,59 @@ export default function CodePad() {
       }
     });
 
-    const activeTheme = config.theme === 'vs-dark' ? 'leetcode-dark' : config.theme === 'hc-black' ? 'hc-black' : 'leetcode-light';
+    const effectiveTheme = config.theme === 'auto'
+      ? (globalTheme === 'dark' ? 'vs-dark' : 'light')
+      : config.theme;
+    const activeTheme = effectiveTheme === 'vs-dark' ? 'leetcode-dark' : effectiveTheme === 'hc-black' ? 'hc-black' : 'leetcode-light';
     monaco.editor.setTheme(activeTheme);
   };
+
+  // 计算当前生效的编辑器主题与暗色标志
+  const effectiveTheme = config.theme === 'auto'
+    ? (globalTheme === 'dark' ? 'vs-dark' : 'light')
+    : config.theme;
+  const activeMonacoTheme = effectiveTheme === 'vs-dark' ? 'leetcode-dark' : effectiveTheme === 'hc-black' ? 'hc-black' : 'leetcode-light';
+  const isDark = effectiveTheme === 'vs-dark' || effectiveTheme === 'hc-black';
+
+  // 动态同步 Monaco 编辑器主题
+  useEffect(() => {
+    if (monacoRef.current) {
+      monacoRef.current.editor.setTheme(activeMonacoTheme);
+    }
+  }, [activeMonacoTheme]);
 
   // 响应主题切换
   const handleThemeChange = (newTheme) => {
     setConfig(prev => ({ ...prev, theme: newTheme }));
-    if (monacoRef.current) {
-      const activeTheme = newTheme === 'vs-dark' ? 'leetcode-dark' : newTheme === 'hc-black' ? 'hc-black' : 'leetcode-light';
-      monacoRef.current.editor.setTheme(activeTheme);
-    }
   };
 
-  // 切换编程语言（直接切换并载入对应语言模版）
+  // 更新当前语言代码并持久化到本地字典 (各语言独立存储)
+  const updateCodeForCurrentLang = useCallback((newVal) => {
+    const updated = newVal ?? '';
+    setCodeMap((prev) => {
+      const nextMap = { ...prev, [currentLang]: updated };
+      try {
+        localStorage.setItem(STORAGE_KEY_CODE, JSON.stringify(nextMap));
+      } catch (e) {}
+      return nextMap;
+    });
+  }, [currentLang]);
+
+  // 切换编程语言（自动保留当前语言草稿，并恢复目标语言的历史草稿）
   const handleLanguageChange = (newLangKey) => {
     setCurrentLang(newLangKey);
-    const targetTpl = LEETCODE_TEMPLATES[newLangKey];
-    if (targetTpl) {
-      setCode(targetTpl.template);
+    setTimeout(() => {
       if (editorRef.current) {
         editorRef.current.focus();
       }
-    }
+    }, 50);
   };
 
-  // 重置为当前语言默认模版（直接重置）
+  // 重置为当前语言默认模版（用户要求保持直接重置，不加二次确认弹窗）
   const handleResetTemplate = () => {
     const currentTpl = LEETCODE_TEMPLATES[currentLang];
     if (currentTpl) {
-      setCode(currentTpl.template);
+      updateCodeForCurrentLang(currentTpl.template);
       if (editorRef.current) {
         editorRef.current.focus();
       }
@@ -326,7 +394,7 @@ export default function CodePad() {
 
   // 清空代码（直接清空）
   const handleClearCode = () => {
-    setCode('');
+    updateCodeForCurrentLang('');
     if (editorRef.current) editorRef.current.focus();
   };
 
@@ -335,8 +403,6 @@ export default function CodePad() {
     const sample = `\n【新示例】\n输入：\n输出：\n解释：\n`;
     setProblemNotes(prev => prev + sample);
   };
-
-  const isDark = config.theme === 'vs-dark' || config.theme === 'hc-black';
 
   // 工作台主体 UI
   const workbenchContent = (
@@ -421,7 +487,8 @@ export default function CodePad() {
             onChange={(e) => handleThemeChange(e.target.value)}
             title="切换编辑器主题"
           >
-            <option value="light">清爽浅色 (默认)</option>
+            <option value="auto">跟随外观 (自动)</option>
+            <option value="light">清爽浅色</option>
             <option value="vs-dark">深色暗黑 (LeetCode)</option>
             <option value="hc-black">高对比度</option>
           </select>
@@ -602,8 +669,8 @@ export default function CodePad() {
               height="100%"
               language={LEETCODE_TEMPLATES[currentLang]?.monacoLang || 'java'}
               value={code}
-              theme={config.theme === 'vs-dark' ? 'leetcode-dark' : config.theme === 'hc-black' ? 'hc-black' : 'leetcode-light'}
-              onChange={(value) => setCode(value || '')}
+              theme={activeMonacoTheme}
+              onChange={(value) => updateCodeForCurrentLang(value || '')}
               onMount={handleEditorDidMount}
               options={{
                 fontSize: config.fontSize,
