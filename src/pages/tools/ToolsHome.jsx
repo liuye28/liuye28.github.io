@@ -4,6 +4,7 @@ import Header from '../../components/Header';
 import SearchBar from '../../components/SearchBar';
 import CategoryTabs from '../../components/CategoryTabs';
 import { useCategoryFilter } from '../../hooks/useCategoryFilter';
+import usePageTitle from '../../hooks/usePageTitle';
 import { tools, toolCategories } from '../../data/tools';
 import './ToolsHome.css';
 
@@ -92,6 +93,7 @@ function ToolIcon({ type }) {
  * 小工具板块首页
  */
 export default function ToolsHome() {
+  usePageTitle('开发者工具箱');
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState('');
   const [activeCategory, setActiveCategory] = useState('全部');

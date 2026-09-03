@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { getFaviconUrl } from '../utils/url';
+import { getFaviconUrl, getDomain, isFaviconFailed, markFaviconFailed } from '../utils/url';
 import './SiteCard.css';
 
 /**
@@ -9,11 +9,18 @@ import './SiteCard.css';
  * @param {Object} props.site 网站数据对象
  */
 export default function SiteCard({ site }) {
-  const [imgError, setImgError] = useState(false);
+  const domain = getDomain(site.url);
+  const isKnownFailed = isFaviconFailed(domain);
+  const [imgError, setImgError] = useState(isKnownFailed);
   const faviconUrl = getFaviconUrl(site.url);
 
   // 首字母备用展示
   const fallbackLetter = site.name ? site.name.trim().charAt(0).toUpperCase() : '?';
+
+  const handleImageError = () => {
+    setImgError(true);
+    markFaviconFailed(domain);
+  };
 
   return (
     <a
@@ -31,7 +38,7 @@ export default function SiteCard({ site }) {
               alt={`${site.name} 图标`}
               className="app-icon"
               loading="lazy"
-              onError={() => setImgError(true)}
+              onError={handleImageError}
             />
           ) : (
             <div className="app-icon-fallback" aria-hidden="true">

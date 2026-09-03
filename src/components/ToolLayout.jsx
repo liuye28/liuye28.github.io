@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import Header from './Header';
+import usePageTitle from '../hooks/usePageTitle';
 import './ToolLayout.css';
 
 /**
@@ -12,6 +13,8 @@ import './ToolLayout.css';
  * @param {React.ReactNode} props.children 工具具体交互组件
  */
 export default function ToolLayout({ title, desc, children }) {
+  // 动态同步浏览器标签页标题
+  usePageTitle(title);
   return (
     <main className="apple-home-wrapper">
       <div className="apple-home-content">

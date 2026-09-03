@@ -33,7 +33,9 @@ function playChime(existingCtx) {
     osc.start(now);
     osc.stop(now + 2.3);
   } catch (err) {
-    console.warn('播放提示音异常:', err);
+    if (import.meta.env.DEV) {
+      console.warn('播放提示音异常:', err);
+    }
   }
 }
 

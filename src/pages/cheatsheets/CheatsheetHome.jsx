@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { marked } from 'marked';
 import Header from '../../components/Header';
+import usePageTitle from '../../hooks/usePageTitle';
 import './CheatsheetHome.css';
 
 // 纯静态 Markdown 内容引入 (借助 Vite ?raw 语法，零后端，打包时直接内联)
@@ -84,6 +85,10 @@ export default function CheatsheetHome() {
   const [selectedId, setSelectedId] = useState('java');
   const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
+
+  // 根据当前选中的技术卡片动态更新标题
+  const activeSheet = useMemo(() => CHEATSHEETS.find((s) => s.id === selectedId), [selectedId]);
+  usePageTitle(activeSheet ? `${activeSheet.title} - 技术备忘录` : '技术速查备忘录');
 
   // 检索过滤备忘录目录
   const filteredSheets = useMemo(() => {
