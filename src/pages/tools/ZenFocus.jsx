@@ -1,11 +1,28 @@
 import React, { useState, useEffect, useRef } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { safeGetItem, safeSetItem, safeGetJSON, safeSetJSON } from '../../utils/storage';
 import './ToolsCommon.css';
+
+const STORAGE_KEY_SOUND_TYPE = 'zen_focus_sound_type';
+const STORAGE_KEY_VOLUME = 'zen_focus_volume';
+const STORAGE_KEY_DAILY_SESSIONS = 'zen_focus_daily_sessions';
+
+/**
+ * 获取本地日期字符串 YYYY-MM-DD，用于当日专注统计按天重置
+ */
+function getLocalDateStr() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
 
 /**
  * Web Audio 原生合成清脆颂钵/风铃提示音 (零资源文件依赖)
  */
 function playChime(existingCtx) {
+  if (typeof window === 'undefined') return;
   try {
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     if (!AudioContext) return;
@@ -60,13 +77,48 @@ export default function ZenFocus() {
   const [mode, setMode] = useState('focus'); // focus (25m), shortBreak (5m), longBreak (15m)
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isRunning, setIsRunning] = useState(false);
-  const [soundType, setSoundType] = useState('none'); // none, rain, white, brown
-  const [volume, setVolume] = useState(0.5);
-  const [completedSessions, setCompletedSessions] = useState(0);
+  const [soundType, setSoundType] = useState(() => {
+    const saved = safeGetItem(STORAGE_KEY_SOUND_TYPE, 'none');
+    return ['none', 'rain', 'brown', 'white'].includes(saved) ? saved : 'none';
+  });
+  const [volume, setVolume] = useState(() => {
+    const saved = safeGetItem(STORAGE_KEY_VOLUME, null);
+    if (saved !== null) {
+      const parsed = parseFloat(saved);
+      if (!isNaN(parsed) && parsed >= 0 && parsed <= 1) {
+        return parsed;
+      }
+    }
+    return 0.5;
+  });
+  const [completedSessions, setCompletedSessions] = useState(() => {
+    const saved = safeGetJSON(STORAGE_KEY_DAILY_SESSIONS, null);
+    const today = getLocalDateStr();
+    if (saved && saved.date === today && typeof saved.count === 'number') {
+      return saved.count;
+    }
+    return 0;
+  });
   const [toast, setToast] = useState(null);
   const [notifyPermission, setNotifyPermission] = useState(() => {
     return typeof window !== 'undefined' && 'Notification' in window ? Notification.permission : 'unsupported';
   });
+
+  // 持久化用户设置与打卡数据
+  useEffect(() => {
+    safeSetItem(STORAGE_KEY_SOUND_TYPE, soundType);
+  }, [soundType]);
+
+  useEffect(() => {
+    safeSetItem(STORAGE_KEY_VOLUME, volume);
+  }, [volume]);
+
+  useEffect(() => {
+    safeSetJSON(STORAGE_KEY_DAILY_SESSIONS, {
+      date: getLocalDateStr(),
+      count: completedSessions
+    });
+  }, [completedSessions]);
 
   // Web Audio 上下文引用
   const audioCtxRef = useRef(null);
