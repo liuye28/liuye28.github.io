@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { parseSqlToPojo, formatSqlInClause } from '../../utils/sqlToPojo';
 import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 
@@ -34,58 +35,6 @@ const SAMPLES = {
 };
 
 /**
- * 驼峰转换工具
- */
-function toPascalCase(str) {
-  if (!str) return 'Entity';
-  return str
-    .replace(/^t_|^tbl_|^sys_/, '') // 去除常见表前缀
-    .replace(/[^a-zA-Z0-9_]/g, '_')
-    .split('_')
-    .filter(Boolean)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join('') || 'Entity';
-}
-
-function toCamelCase(str) {
-  if (!str) return 'field';
-  const pascal = str
-    .replace(/[^a-zA-Z0-9_]/g, '_')
-    .split('_')
-    .filter(Boolean)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join('');
-  return pascal ? pascal.charAt(0).toLowerCase() + pascal.slice(1) : 'field';
-}
-
-/**
- * 字段类型映射字典
- */
-function mapDataType(rawType) {
-  const t = rawType.toLowerCase();
-  if (t.includes('bigint')) return { javaType: 'Long', importPkg: null };
-  if (t.includes('tinyint(1)')) return { javaType: 'Boolean', importPkg: null };
-  if (t.includes('tinyint') || t.includes('smallint') || t.includes('mediumint') || t.includes('int')) {
-    return { javaType: 'Integer', importPkg: null };
-  }
-  if (t.includes('decimal') || t.includes('numeric')) {
-    return { javaType: 'BigDecimal', importPkg: 'import java.math.BigDecimal;' };
-  }
-  if (t.includes('double')) return { javaType: 'Double', importPkg: null };
-  if (t.includes('float')) return { javaType: 'Float', importPkg: null };
-  if (t.includes('datetime') || t.includes('timestamp')) {
-    return { javaType: 'LocalDateTime', importPkg: 'import java.time.LocalDateTime;' };
-  }
-  if (t.includes('date')) {
-    return { javaType: 'LocalDate', importPkg: 'import java.time.LocalDate;' };
-  }
-  if (t.includes('time')) {
-    return { javaType: 'LocalTime', importPkg: 'import java.time.LocalTime;' };
-  }
-  return { javaType: 'String', importPkg: null };
-}
-
-/**
  * SQL DDL 转 MyBatis-Plus 实体类与代码生成器
  */
 export default function SqlToPojo() {
@@ -100,192 +49,19 @@ export default function SqlToPojo() {
   const [inInput, setInInput] = useState('1001\n1002\n1003\n1004');
   const [isStringIn, setIsStringIn] = useState(false);
 
-  // DDL 解析引擎
+  // DDL 解析与代码生成计算引擎（抽离至 utils/sqlToPojo.js）
   const { javaEntity, mapperCode, error, rawTableName, compositePkCols } = useMemo(() => {
-    if (!sqlInput.trim()) {
-      return { javaEntity: '', mapperCode: '', error: null, rawTableName: '', compositePkCols: null };
-    }
-
-    try {
-      // 1. 匹配表名
-      const tableMatch = sqlInput.match(/create\s+table\s+[`"]?([a-zA-Z0-9_]+)[`"]?/i);
-      if (!tableMatch) {
-        return { javaEntity: '', mapperCode: '', error: '未能匹配到有效的 CREATE TABLE 语句', rawTableName: '', compositePkCols: null };
-      }
-      const tableName = tableMatch[1];
-      const className = toPascalCase(tableName);
-
-      // 2. 匹配表注释
-      const tableCommentMatch = sqlInput.match(/comment\s*=\s*['"]([^'"]*)['"]/i);
-      const tableComment = tableCommentMatch ? tableCommentMatch[1] : '';
-
-      // 3. 匹配主键定义 (兼容单主键与多主键/组合主键)
-      const pkMatch = sqlInput.match(/primary\s+key\s*\(([^)]+)\)/i);
-      let primaryKeyCols = [];
-      let isCompositePk = false;
-      if (pkMatch) {
-        primaryKeyCols = pkMatch[1].split(',').map((c) => c.replace(/[`"'\s]/g, '')).filter(Boolean);
-        if (primaryKeyCols.length > 1) {
-          isCompositePk = true;
-        }
-      }
-
-      // 4. 按行匹配列定义
-      const lines = sqlInput.split('\n');
-      const columns = [];
-      const imports = new Set();
-
-      if (useLombok) {
-        imports.add('import lombok.Data;');
-        imports.add('import lombok.Builder;');
-        imports.add('import lombok.NoArgsConstructor;');
-        imports.add('import lombok.AllArgsConstructor;');
-      }
-      imports.add('import com.baomidou.mybatisplus.annotation.TableName;');
-      imports.add('import com.baomidou.mybatisplus.annotation.TableId;');
-      imports.add('import com.baomidou.mybatisplus.annotation.IdType;');
-      if (useTableField) {
-        imports.add('import com.baomidou.mybatisplus.annotation.TableField;');
-      }
-      imports.add('import java.io.Serializable;');
-
-      for (const line of lines) {
-        const trimmed = line.trim();
-        // 排除非列定义的语句行
-        if (
-          !trimmed ||
-          trimmed.startsWith('CREATE') ||
-          trimmed.startsWith(')') ||
-          trimmed.startsWith('PRIMARY KEY') ||
-          trimmed.startsWith('KEY') ||
-          trimmed.startsWith('UNIQUE KEY') ||
-          trimmed.startsWith('CONSTRAINT') ||
-          trimmed.startsWith('--')
-        ) {
-          continue;
-        }
-
-        // 匹配列名、列类型、注释
-        // 例: `username` varchar(64) NOT NULL COMMENT '登录用户名',
-        const colMatch = trimmed.match(/^[`"]?([a-zA-Z0-9_]+)[`"]?\s+([a-zA-Z0-9_()]+)/i);
-        if (colMatch) {
-          const colName = colMatch[1];
-          const colType = colMatch[2];
-          const isAutoInc = /auto_increment/i.test(trimmed);
-          const isPk = primaryKeyCols.includes(colName) || (!pkMatch && /primary\s+key/i.test(trimmed));
-
-          // 匹配列注释
-          const commentMatch = trimmed.match(/comment\s+['"]([^'"]*)['"]/i);
-          const comment = commentMatch ? commentMatch[1] : '';
-
-          const { javaType, importPkg } = mapDataType(colType);
-          if (importPkg) imports.add(importPkg);
-
-          columns.push({
-            colName,
-            fieldName: toCamelCase(colName),
-            javaType,
-            comment,
-            isPk,
-            isAutoInc
-          });
-        }
-      }
-
-      if (columns.length === 0) {
-        return { javaEntity: '', mapperCode: '', error: '未识别到任何数据列定义，请检查建表语句', rawTableName: '' };
-      }
-
-      // 5. 拼装 Entity 源码
-      const codeLines = [];
-      if (packageName.trim()) {
-        codeLines.push(`package ${packageName.trim()};`);
-        codeLines.push('');
-      }
-
-      const sortedImports = Array.from(imports).sort();
-      codeLines.push(...sortedImports);
-      codeLines.push('');
-
-      if (tableComment) {
-        codeLines.push('/**');
-        codeLines.push(` * ${tableComment}`);
-        codeLines.push(' */');
-      }
-      if (useLombok) {
-        codeLines.push('@Data');
-        codeLines.push('@Builder');
-        codeLines.push('@NoArgsConstructor');
-        codeLines.push('@AllArgsConstructor');
-      }
-      codeLines.push(`@TableName("${tableName}")`);
-      codeLines.push(`public class ${className} implements Serializable {`);
-      codeLines.push('');
-      codeLines.push('    private static final long serialVersionUID = 1L;');
-
-      columns.forEach((col, idx) => {
-        codeLines.push('');
-        if (col.comment) {
-          codeLines.push(`    /**`);
-          codeLines.push(`     * ${col.comment}`);
-          codeLines.push(`     */`);
-        }
-        if (col.isPk) {
-          const idType = col.isAutoInc ? 'IdType.AUTO' : 'IdType.ASSIGN_ID';
-          codeLines.push(`    @TableId(value = "${col.colName}", type = ${idType})`);
-        } else if (useTableField) {
-          codeLines.push(`    @TableField("${col.colName}")`);
-        }
-        codeLines.push(`    private ${col.javaType} ${col.fieldName};`);
-      });
-
-      codeLines.push('}');
-      codeLines.push('');
-
-      // 6. 生成基础 Mapper 接口
-      let mapperStr = '';
-      if (genMapper) {
-        mapperStr = [
-          `package ${packageName.replace(/entity$/, 'mapper').trim()};`,
-          '',
-          `import com.baomidou.mybatisplus.core.mapper.BaseMapper;`,
-          `import ${packageName.trim()}.${className};`,
-          `import org.apache.ibatis.annotations.Mapper;`,
-          '',
-          '/**',
-          ` * ${tableComment || className} 数据访问层 Mapper`,
-          ' */',
-          '@Mapper',
-          `public interface ${className}Mapper extends BaseMapper<${className}> {`,
-          '}'
-        ].join('\n');
-      }
-
-      return {
-        javaEntity: codeLines.join('\n'),
-        mapperCode: mapperStr,
-        error: null,
-        rawTableName: tableName,
-        compositePkCols: isCompositePk ? primaryKeyCols : null
-      };
-    } catch (err) {
-      return { javaEntity: '', mapperCode: '', error: err.message, rawTableName: '', compositePkCols: null };
-    }
+    return parseSqlToPojo(sqlInput, {
+      packageName,
+      useLombok,
+      useTableField,
+      genMapper
+    });
   }, [sqlInput, packageName, useLombok, useTableField, genMapper]);
 
-  // SQL IN 格式化计算
+  // SQL IN 格式化计算（抽离至 utils/sqlToPojo.js）
   const formattedInSql = useMemo(() => {
-    if (!inInput.trim()) return '';
-    const items = inInput
-      .split(/[\n,;，；\s]+/)
-      .map(s => s.trim())
-      .filter(Boolean);
-    if (items.length === 0) return '';
-    if (isStringIn) {
-      return `IN (${items.map(i => `'${i}'`).join(', ')})`;
-    } else {
-      return `IN (${items.join(', ')})`;
-    }
+    return formatSqlInClause(inInput, isStringIn);
   }, [inInput, isStringIn]);
 
   const handleCopy = (text) => {
