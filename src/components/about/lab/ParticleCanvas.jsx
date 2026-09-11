@@ -169,6 +169,7 @@ export function ParticleCanvas({ initialMode = 'aurora' }) {
     };
 
     resizeCanvas();
+    const transitionTimer = setTimeout(resizeCanvas, 320);
     window.addEventListener('resize', resizeCanvas);
 
     // 帧渲染逻辑
@@ -346,6 +347,7 @@ export function ParticleCanvas({ initialMode = 'aurora' }) {
     document.addEventListener('visibilitychange', handleVisibilityChange);
 
     return () => {
+      clearTimeout(transitionTimer);
       isRunningRef.current = false;
       if (rafIdRef.current) {
         cancelAnimationFrame(rafIdRef.current);
@@ -353,7 +355,7 @@ export function ParticleCanvas({ initialMode = 'aurora' }) {
       window.removeEventListener('resize', resizeCanvas);
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
-  }, [mode, initAuroraParticles, initMatrixRain, particleCount]);
+  }, [mode, initAuroraParticles, initMatrixRain, particleCount, isExpanded]);
 
   // 鼠标交互事件监听
   const handlePointerMove = (e) => {

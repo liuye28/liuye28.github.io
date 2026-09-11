@@ -272,3 +272,18 @@ html[data-theme='dark'] .about-segment-btn.is-active {
   transition: var(--transition-fast);
 }
 
+/* ==========================================================================
+   无障碍：减弱动态效果适配 (Prefers Reduced Motion)
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  .about-page-wrapper,
+  .about-page-wrapper *,
+  .about-page-wrapper *::before,
+  .about-page-wrapper *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+

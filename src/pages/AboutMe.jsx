@@ -49,7 +49,7 @@ export default function AboutMe() {
     if (currentTabEl && listEl) {
       const listRect = listEl.getBoundingClientRect();
       const tabRect = currentTabEl.getBoundingClientRect();
-      const left = tabRect.left - listRect.left;
+      const left = tabRect.left - listRect.left - (listEl.clientLeft || 0);
       const width = tabRect.width;
 
       setIndicatorStyle({
@@ -148,6 +148,7 @@ export default function AboutMe() {
           <div
             className="about-segmented-control"
             role="tablist"
+            aria-orientation="horizontal"
             aria-label="极客空间内容切换"
             ref={tabListRef}
           >
