@@ -29,6 +29,7 @@ const Settings = lazy(() => import('./pages/Settings'));
 import WebTerminal from './components/WebTerminal';
 import ErrorBoundary from './components/ErrorBoundary';
 import PwaUpdateToast from './components/PwaUpdateToast';
+import CommandPalette from './components/CommandPalette';
 
 /**
  * Apple 极简优雅路由过渡骨架
@@ -124,6 +125,8 @@ export default function App() {
       <WebTerminal />
       {/* PWA 平滑热更新 Toast 悬浮通知 */}
       <PwaUpdateToast />
+      {/* 全局 Raycast 式命令面板浮层 */}
+      <CommandPalette />
     </HashRouter>
   );
 }
