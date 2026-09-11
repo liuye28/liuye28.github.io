@@ -21,10 +21,15 @@ export default function SearchBar({
 }) {
   const inputRef = useRef(null);
 
-  // 绑定全局快捷键 ⌘K / Ctrl+K 快速聚焦搜索栏
+  // 绑定快捷键 / 快速聚焦就地搜索栏 (当未在其他输入框中打字时)
   useEffect(() => {
     const handleGlobalKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if (
+        e.key === '/' &&
+        !['INPUT', 'TEXTAREA'].includes(e.target.tagName) &&
+        !e.metaKey &&
+        !e.ctrlKey
+      ) {
         e.preventDefault();
         inputRef.current?.focus();
       }
@@ -103,9 +108,8 @@ export default function SearchBar({
               </svg>
             </button>
           ) : (
-            <div className="spotlight-shortcut-badge" aria-hidden="true" title="快捷键 ⌘K 或 Ctrl+K">
-              <span className="shortcut-key">⌘</span>
-              <span className="shortcut-key">K</span>
+            <div className="spotlight-shortcut-badge" aria-hidden="true" title="按 / 键快速聚焦">
+              <span className="shortcut-key">/</span>
             </div>
           )}
         </div>
