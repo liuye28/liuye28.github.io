@@ -120,6 +120,7 @@ export default function WebTerminal() {
   nav                - 返回网站导航首页
   cheatsheet         - 打开极简技术速查备忘录
   about              - 打开关于我与技术雷达
+  settings           - 打开系统设置与数据中心
   theme <dark|light> - 切换全站深浅外观 (如 theme dark)
   date               - 查看当前本地时间与莫斯科时区时间
   matrix             - 触发黑客帝国全屏代码雨特效
@@ -163,6 +164,11 @@ export default function WebTerminal() {
 
       case 'about':
         navigate('/about');
+        setIsOpen(false);
+        break;
+
+      case 'settings':
+        navigate('/settings');
         setIsOpen(false);
         break;
 

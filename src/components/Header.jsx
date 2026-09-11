@@ -130,6 +130,14 @@ export default function Header() {
         >
           关于我
         </NavLink>
+        <NavLink
+          to="/settings"
+          className={({ isActive }) =>
+            `header-nav-item ${isActive ? 'active' : ''}`
+          }
+        >
+          设置
+        </NavLink>
       </nav>
 
       <div className="header-actions">
