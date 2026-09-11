@@ -17,6 +17,8 @@ function logWarn(...args) {
   }
 }
 
+let cachedStorageAvailable = null;
+
 /**
  * 探测当前运行环境是否真正支持原生 localStorage 读写
  * 兼顾：SSR 环境、Safari 无痕/隐私模式、iframe 严格沙盒限制及 QuotaExceeded
@@ -24,21 +26,30 @@ function logWarn(...args) {
  * @returns {boolean}
  */
 export function isStorageAvailable() {
-  if (typeof window === 'undefined' || typeof localStorage === 'undefined') {
+  if (cachedStorageAvailable !== null) {
+    return cachedStorageAvailable;
+  }
+  if (typeof localStorage === 'undefined') {
     return false;
   }
   try {
     const probeKey = '__storage_probe__';
     localStorage.setItem(probeKey, probeKey);
     localStorage.removeItem(probeKey);
+    cachedStorageAvailable = true;
     return true;
   } catch {
+    cachedStorageAvailable = false;
     return false;
   }
 }
 
-// 缓存当前环境的可用性判定
-const storageAvailable = isStorageAvailable();
+/**
+ * 重置存储可用性缓存（用于单元测试或环境切换）
+ */
+export function resetStorageAvailableCache() {
+  cachedStorageAvailable = null;
+}
 
 // 内存降级存储容器：当无痕模式或沙盒完全拦截 localStorage 时，保证当前单次会话内的读写与交互正常
 const memoryStore = new Map();
@@ -51,7 +62,7 @@ const memoryStore = new Map();
  * @returns {string|null}
  */
 export function safeGetItem(key, fallback = null) {
-  if (storageAvailable) {
+  if (isStorageAvailable()) {
     try {
       const val = localStorage.getItem(key);
       if (val !== null) {
@@ -76,7 +87,7 @@ export function safeSetItem(key, value) {
   const strVal = String(value);
   let nativeSuccess = false;
 
-  if (storageAvailable) {
+  if (isStorageAvailable()) {
     try {
       localStorage.setItem(key, strVal);
       nativeSuccess = true;
@@ -87,7 +98,7 @@ export function safeSetItem(key, value) {
 
   // 同步在内存降级字典中存储一份，确保隐私模式或降级场景下会话一致
   memoryStore.set(key, strVal);
-  return nativeSuccess || !storageAvailable;
+  return nativeSuccess || !isStorageAvailable();
 }
 
 /**
@@ -99,7 +110,7 @@ export function safeSetItem(key, value) {
 export function safeRemoveItem(key) {
   let nativeSuccess = false;
 
-  if (storageAvailable) {
+  if (isStorageAvailable()) {
     try {
       localStorage.removeItem(key);
       nativeSuccess = true;
@@ -109,7 +120,7 @@ export function safeRemoveItem(key) {
   }
 
   memoryStore.delete(key);
-  return nativeSuccess || !storageAvailable;
+  return nativeSuccess || !isStorageAvailable();
 }
 
 /**

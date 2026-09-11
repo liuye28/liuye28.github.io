@@ -24,9 +24,11 @@ const OzonProfitCalc = lazy(() => import('./pages/tools/OzonProfitCalc'));
 const LocalScratchpad = lazy(() => import('./pages/tools/LocalScratchpad'));
 const ZenFocus = lazy(() => import('./pages/tools/ZenFocus'));
 const AboutMe = lazy(() => import('./pages/AboutMe'));
+const Settings = lazy(() => import('./pages/Settings'));
 
 import WebTerminal from './components/WebTerminal';
 import ErrorBoundary from './components/ErrorBoundary';
+import PwaUpdateToast from './components/PwaUpdateToast';
 
 /**
  * Apple 极简优雅路由过渡骨架
@@ -86,6 +88,9 @@ export default function App() {
             {/* 关于我与技术雷达 */}
             <Route path="/about" element={<AboutMe />} />
 
+            {/* 系统设置与数据中心 */}
+            <Route path="/settings" element={<Settings />} />
+
             {/* 跨境电商专用工具 */}
             <Route path="/tools/ozon-rich" element={<OzonRichContent />} />
             <Route path="/tools/ozon-size" element={<OzonSizeTable />} />
@@ -117,6 +122,8 @@ export default function App() {
       </ErrorBoundary>
       {/* 全局极客唤起式终端浮层 */}
       <WebTerminal />
+      {/* PWA 平滑热更新 Toast 悬浮通知 */}
+      <PwaUpdateToast />
     </HashRouter>
   );
 }
