@@ -3,7 +3,11 @@ import assert from 'node:assert/strict';
 import {
   buildAllCommands,
   searchCommands,
-  getDefaultCommands
+  getDefaultCommands,
+  highlightMatches,
+  recordRecentCommand,
+  getRecentCommandIds,
+  clearRecentCommands
 } from '../src/utils/commandPaletteIndex.js';
 
 describe('commandPaletteIndex 检索与动作引擎测试', () => {
@@ -59,4 +63,63 @@ describe('commandPaletteIndex 检索与动作引擎测试', () => {
     const results = searchCommands('xyz_not_exist_query_12345', commands);
     assert.equal(results.length, 0);
   });
+
+  test('highlightMatches 高亮拆分纯函数测试', () => {
+    // 1. 空查询词原样返回
+    const emptyParts = highlightMatches('Diff Viewer', '');
+    assert.deepEqual(emptyParts, [{ text: 'Diff Viewer', isMatch: false }]);
+
+    // 2. 单次命中与大小写保持
+    const singleParts = highlightMatches('Diff 对比器', 'diff');
+    assert.deepEqual(singleParts, [
+      { text: 'Diff', isMatch: true },
+      { text: ' 对比器', isMatch: false }
+    ]);
+
+    // 3. 多次命中
+    const multiParts = highlightMatches('JSON to Java and JSON POJO', 'json');
+    assert.deepEqual(multiParts, [
+      { text: 'JSON', isMatch: true },
+      { text: ' to Java and ', isMatch: false },
+      { text: 'JSON', isMatch: true },
+      { text: ' POJO', isMatch: false }
+    ]);
+
+    // 4. 特殊正则字符安全转义（不会抛错）
+    const regexSafe = highlightMatches('Hello (World)', '(');
+    assert.deepEqual(regexSafe, [
+      { text: 'Hello ', isMatch: false },
+      { text: '(', isMatch: true },
+      { text: 'World)', isMatch: false }
+    ]);
+  });
+
+  test('最近使用历史记录 (recordRecentCommand / clearRecentCommands) 测试', () => {
+    clearRecentCommands();
+    assert.deepEqual(getRecentCommandIds(), []);
+
+    // 记录多条命令
+    recordRecentCommand('tool-diff', 3);
+    recordRecentCommand('act-theme', 3);
+    assert.deepEqual(getRecentCommandIds(), ['act-theme', 'tool-diff']);
+
+    // 重复记录置顶
+    recordRecentCommand('tool-diff', 3);
+    assert.deepEqual(getRecentCommandIds(), ['tool-diff', 'act-theme']);
+
+    // 超过上限淘汰最老
+    recordRecentCommand('tool-cron', 3);
+    recordRecentCommand('tool-json', 3);
+    assert.deepEqual(getRecentCommandIds(), ['tool-json', 'tool-cron', 'tool-diff']);
+
+    // getDefaultCommands 支持最近使用置顶
+    const commands = buildAllCommands(dummyHelpers);
+    const defaultsWithRecents = getDefaultCommands(commands, ['tool-json', 'tool-diff']);
+    assert.ok(defaultsWithRecents.some((c) => c.category === '最近使用'));
+    assert.equal(defaultsWithRecents[0].id, 'recent-tool-json');
+
+    clearRecentCommands();
+    assert.deepEqual(getRecentCommandIds(), []);
+  });
 });
+

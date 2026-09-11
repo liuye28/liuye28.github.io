@@ -10,6 +10,9 @@
 
 import { tools } from '../data/tools.js';
 import { sites } from '../data/sites.js';
+import { safeGetJSON, safeSetJSON } from './storage.js';
+
+export const STORAGE_KEY_RECENTS = 'recent_palette_commands';
 
 // 常用工具预置拼音与英文关键词别名字典
 const TOOL_KEYWORDS = {
@@ -256,12 +259,85 @@ export function buildAllCommands(helpers = {}) {
 }
 
 /**
- * 获得空输入状态下的高频默认推荐集
+ * 获取最近使用过的命令 ID 列表
+ * @returns {string[]}
+ */
+export function getRecentCommandIds() {
+  const ids = safeGetJSON(STORAGE_KEY_RECENTS, []);
+  return Array.isArray(ids) ? ids : [];
+}
+
+/**
+ * 记录一次命令执行历史并置顶
+ * @param {string} cmdId 命令 ID
+ * @param {number} [maxCount=5] 最大存储记录数
+ */
+export function recordRecentCommand(cmdId, maxCount = 5) {
+  if (!cmdId || typeof cmdId !== 'string') return;
+  const realId = cmdId.startsWith('recent-') ? cmdId.replace(/^recent-/, '') : cmdId;
+  const current = getRecentCommandIds();
+  const next = [realId, ...current.filter((id) => id !== realId)].slice(0, maxCount);
+  safeSetJSON(STORAGE_KEY_RECENTS, next);
+}
+
+/**
+ * 清空所有最近使用历史记录
+ */
+export function clearRecentCommands() {
+  safeSetJSON(STORAGE_KEY_RECENTS, []);
+}
+
+/**
+ * 搜索关键词高亮拆分纯函数
+ *
+ * @param {string} text 待高亮渲染的原始文本
+ * @param {string} query 当前搜索关键词
+ * @returns {Array<{ text: string, isMatch: boolean }>}
+ */
+export function highlightMatches(text, query) {
+  if (!text) return [];
+  if (!query || typeof query !== 'string' || !query.trim()) {
+    return [{ text, isMatch: false }];
+  }
+
+  const q = query.trim();
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escaped})`, 'gi');
+  const parts = text.split(regex);
+
+  return parts
+    .filter((part) => part.length > 0)
+    .map((part) => ({
+      text: part,
+      isMatch: part.toLowerCase() === q.toLowerCase()
+    }));
+}
+
+/**
+ * 获得空输入状态下的高频默认推荐集（包含最近使用记录）
  *
  * @param {Array<object>} allCommands
+ * @param {Array<string>|null} [recentIds=null]
  * @returns {Array<object>}
  */
-export function getDefaultCommands(allCommands) {
+export function getDefaultCommands(allCommands, recentIds = null) {
+  const ids = recentIds !== null ? recentIds : getRecentCommandIds();
+  const recentCommands = [];
+
+  if (Array.isArray(ids) && ids.length > 0) {
+    ids.forEach((id) => {
+      const match = allCommands.find((c) => c.id === id);
+      if (match) {
+        recentCommands.push({
+          ...match,
+          id: `recent-${match.id}`,
+          category: '最近使用',
+          shortcutHint: '回车执行'
+        });
+      }
+    });
+  }
+
   // 推荐：3 个高频系统动作 + 5 款代表性小工具
   const topActionIds = ['act-theme', 'act-settings', 'act-backup'];
   const topToolIds = ['tool-diff', 'tool-cron', 'tool-json', 'tool-timestamp', 'tool-scratchpad'];
@@ -269,7 +345,7 @@ export function getDefaultCommands(allCommands) {
   const actions = allCommands.filter((c) => topActionIds.includes(c.id));
   const toolsList = allCommands.filter((c) => topToolIds.includes(c.id));
 
-  return [...actions, ...toolsList];
+  return [...recentCommands, ...actions, ...toolsList];
 }
 
 /**
@@ -277,11 +353,12 @@ export function getDefaultCommands(allCommands) {
  *
  * @param {string} query 搜索词
  * @param {Array<object>} allCommands 全量命令集合
+ * @param {Array<string>|null} [recentIds=null]
  * @returns {Array<object>} 过滤与排序后的匹配命令列表
  */
-export function searchCommands(query, allCommands) {
+export function searchCommands(query, allCommands, recentIds = null) {
   if (!query || typeof query !== 'string' || !query.trim()) {
-    return getDefaultCommands(allCommands);
+    return getDefaultCommands(allCommands, recentIds);
   }
 
   const q = query.trim().toLowerCase();

@@ -2,11 +2,37 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom';
 import {
   buildAllCommands,
-  searchCommands
+  searchCommands,
+  highlightMatches,
+  recordRecentCommand,
+  getRecentCommandIds,
+  clearRecentCommands
 } from '../utils/commandPaletteIndex.js';
 import { exportBackup } from '../utils/backupManager.js';
-import { safeSetJSON, safeGetJSON } from '../utils/storage.js';
+import { safeSetJSON } from '../utils/storage.js';
 import './CommandPalette.css';
+
+/**
+ * 搜索关键词高亮渲染辅助组件
+ */
+function HighlightedText({ text, query }) {
+  const parts = useMemo(() => highlightMatches(text, query), [text, query]);
+  if (!query || !query.trim() || !text) return text || '';
+
+  return (
+    <>
+      {parts.map((part, index) =>
+        part.isMatch ? (
+          <mark key={index} className="command-highlight">
+            {part.text}
+          </mark>
+        ) : (
+          part.text
+        )
+      )}
+    </>
+  );
+}
 
 /**
  * Apple HIG / Raycast 风格全局 Command Palette 组件
@@ -15,10 +41,16 @@ export default function CommandPalette() {
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [activeIndex, setActiveIndex] = useState(0);
+  const [recentsVersion, setRecentsVersion] = useState(0);
 
   const inputRef = useRef(null);
   const activeItemRef = useRef(null);
   const navigate = useNavigate();
+
+  // 读取最新最近命令 ID 列表
+  const recentIds = useMemo(() => {
+    return getRecentCommandIds();
+  }, [recentsVersion, isOpen]);
 
   // 主题切换辅助逻辑
   const handleToggleTheme = useCallback(() => {
@@ -43,7 +75,6 @@ export default function CommandPalette() {
         if (typeof window !== 'undefined') {
           // 打开终端并执行代码雨
           window.toggleWebTerminal?.();
-          // 如果 WebTerminal 已经挂载，可以通知其显示
         }
       },
       exportBackup: () => exportBackup(),
@@ -55,11 +86,30 @@ export default function CommandPalette() {
   // 预编译全量命令索引
   const allCommands = useMemo(() => buildAllCommands(helpers), [helpers]);
 
-  // 过滤与加权排序匹配结果
+  // 过滤与加权排序匹配结果（空查询时融入最近使用历史）
   const filteredCommands = useMemo(
-    () => searchCommands(query, allCommands),
-    [query, allCommands]
+    () => searchCommands(query, allCommands, recentIds),
+    [query, allCommands, recentIds]
   );
+
+  // 执行命令并记录到最近使用历史
+  const handleExecuteCommand = useCallback(
+    (cmd) => {
+      if (!cmd) return;
+      recordRecentCommand(cmd.id);
+      setRecentsVersion((v) => v + 1);
+      if (cmd.action) {
+        cmd.action(helpers);
+      }
+    },
+    [helpers]
+  );
+
+  // 清空最近使用历史
+  const handleClearRecents = useCallback(() => {
+    clearRecentCommands();
+    setRecentsVersion((v) => v + 1);
+  }, []);
 
   // 每次查询词变更，重置高亮索引到第一条
   useEffect(() => {
@@ -82,12 +132,12 @@ export default function CommandPalette() {
     };
   }, [isOpen]);
 
-  // 视口自动平滑滚动对齐高亮条目
+  // 视口自动瞬时对齐高亮条目 (auto 消除 smooth 的快速连按帧积压)
   useEffect(() => {
     if (activeItemRef.current) {
       activeItemRef.current.scrollIntoView({
         block: 'nearest',
-        behavior: 'smooth'
+        behavior: 'auto'
       });
     }
   }, [activeIndex]);
@@ -132,8 +182,8 @@ export default function CommandPalette() {
     } else if (e.key === 'Enter') {
       e.preventDefault();
       const selected = filteredCommands[activeIndex];
-      if (selected && selected.action) {
-        selected.action(helpers);
+      if (selected) {
+        handleExecuteCommand(selected);
       }
     }
   };
@@ -141,7 +191,7 @@ export default function CommandPalette() {
   if (!isOpen) return null;
 
   // 按分类对过滤结果进行分组渲染
-  const categoryOrder = ['系统动作', '实用工具', '技术速查', '常用网站'];
+  const categoryOrder = ['最近使用', '系统动作', '实用工具', '技术速查', '常用网站'];
   const grouped = {};
   categoryOrder.forEach((cat) => {
     grouped[cat] = [];
@@ -209,7 +259,20 @@ export default function CommandPalette() {
               return (
                 <div key={cat} className="command-group-section">
                   <div className="command-group-title">
-                    {cat} · {items.length}
+                    <span>{cat} · {items.length}</span>
+                    {cat === '最近使用' && (
+                      <button
+                        type="button"
+                        className="command-clear-recents-btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleClearRecents();
+                        }}
+                        title="清空最近使用历史"
+                      >
+                        清空
+                      </button>
+                    )}
                   </div>
                   {items.map(({ cmd, flatIndex }) => {
                     const isActive = flatIndex === activeIndex;
@@ -221,16 +284,18 @@ export default function CommandPalette() {
                         role="option"
                         aria-selected={isActive}
                         className={`command-item ${isActive ? 'active' : ''}`}
-                        onClick={() => cmd.action && cmd.action(helpers)}
+                        onClick={() => handleExecuteCommand(cmd)}
                         onMouseEnter={() => setActiveIndex(flatIndex)}
                       >
                         <div className="command-item-left">
                           <span className="command-item-icon">{cmd.icon}</span>
                           <div className="command-item-text">
-                            <span className="command-item-title">{cmd.title}</span>
+                            <span className="command-item-title">
+                              <HighlightedText text={cmd.title} query={query} />
+                            </span>
                             {cmd.subtitle && (
                               <span className="command-item-subtitle">
-                                {cmd.subtitle}
+                                <HighlightedText text={cmd.subtitle} query={query} />
                               </span>
                             )}
                           </div>

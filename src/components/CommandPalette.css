@@ -120,7 +120,11 @@
 }
 
 /* 分类分组标头 */
-.command-group-header {
+.command-group-header,
+.command-group-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 0.6rem 0.85rem 0.35rem 0.85rem;
   font-size: 0.74rem;
   font-weight: 600;
@@ -133,6 +137,38 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   z-index: 10;
+}
+
+.command-clear-recents-btn {
+  background: transparent;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 0.1rem 0.45rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.command-clear-recents-btn:hover {
+  background: var(--bg-secondary, rgba(120, 120, 128, 0.14));
+  color: var(--text-primary);
+  border-color: var(--text-secondary);
+}
+
+/* 搜索关键词高亮标记 */
+.command-highlight {
+  background: rgba(0, 113, 227, 0.18);
+  color: var(--accent-color, #0071e3);
+  font-weight: 700;
+  border-radius: 3px;
+  padding: 0 0.18em;
+}
+
+[data-theme='dark'] .command-highlight {
+  background: rgba(41, 151, 255, 0.26);
+  color: #5ac8fa;
 }
 
 /* 单条命令项目 */
