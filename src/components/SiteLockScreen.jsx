@@ -14,7 +14,7 @@ export default function SiteLockScreen() {
   const [locked, setLocked] = useState(() => isSiteLocked());
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberDays, setRememberDays] = useState(true);
+  const [rememberDays, setRememberDays] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [shake, setShake] = useState(false);
@@ -170,7 +170,7 @@ export default function SiteLockScreen() {
               checked={rememberDays}
               onChange={(e) => setRememberDays(e.target.checked)}
             />
-            <span>记住此设备 7 天（下次免输入）</span>
+            <span>记住此设备 7 天（未勾选则仅本次访问有效）</span>
           </label>
 
           <button

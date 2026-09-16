@@ -14,7 +14,7 @@ import {
   resetPasswordToDefault,
   STORAGE_KEYS
 } from '../src/utils/siteLock.js';
-import { safeRemoveItem } from '../src/utils/storage.js';
+import { safeRemoveItem, safeGetItem } from '../src/utils/storage.js';
 
 describe('siteLock 核心密码与状态机测试', () => {
   beforeEach(() => {
@@ -75,9 +75,16 @@ describe('siteLock 核心密码与状态机测试', () => {
     assert.strictEqual(isSiteLocked(), true);
   });
 
-  test('unlockSite 传入 rememberDays: 0 应进行会话级解锁', async () => {
+  test('unlockSite 传入 rememberDays: 0 绝不应将标记写入 localStorage，且在会话清除后恢复锁定', () => {
     unlockSite({ rememberDays: 0 });
     assert.strictEqual(isSiteLocked(), false);
+    // localStorage 中绝对不得有持久化的 SESSION_UNLOCKED 或 UNLOCKED_UNTIL
+    assert.strictEqual(safeGetItem(STORAGE_KEYS.SESSION_UNLOCKED), null);
+    assert.strictEqual(safeGetItem(STORAGE_KEYS.UNLOCKED_UNTIL), null);
+
+    // 手动锁屏或会话清理后应立即恢复锁定
+    lockSite();
+    assert.strictEqual(isSiteLocked(), true);
   });
 
   test('changePassword 校验原密码并更新为新密码', async () => {

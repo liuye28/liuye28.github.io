@@ -20,6 +20,38 @@ export const STORAGE_KEYS = {
   SESSION_UNLOCKED: 'person_web_session_unlocked'
 };
 
+// 自动清理历史版本中误写入 localStorage 的 session 标记，彻底杜绝永久免密残留
+safeRemoveItem(STORAGE_KEYS.SESSION_UNLOCKED);
+
+// 会话级临时解锁状态（存储于 sessionStorage，Node 测试或不支持环境下自动降级为内存变量）
+let memorySessionUnlocked = false;
+
+export function isSessionUnlocked() {
+  if (typeof sessionStorage !== 'undefined') {
+    try {
+      return sessionStorage.getItem(STORAGE_KEYS.SESSION_UNLOCKED) === 'true';
+    } catch {
+      // 忽略隐私模式下 sessionStorage 读取限制
+    }
+  }
+  return memorySessionUnlocked;
+}
+
+export function setSessionUnlocked(unlocked) {
+  if (typeof sessionStorage !== 'undefined') {
+    try {
+      if (unlocked) {
+        sessionStorage.setItem(STORAGE_KEYS.SESSION_UNLOCKED, 'true');
+      } else {
+        sessionStorage.removeItem(STORAGE_KEYS.SESSION_UNLOCKED);
+      }
+    } catch {
+      // 忽略隐私模式下 sessionStorage 写入限制
+    }
+  }
+  memorySessionUnlocked = Boolean(unlocked);
+}
+
 const EVENT_NAME = 'person_web_lock_change';
 
 // 内存订阅者集合，确保单页与多组件响应同步
@@ -132,12 +164,12 @@ export function isSiteLocked() {
     return false;
   }
 
-  // 1. 检查本次会话临时解锁标记
-  if (safeGetItem(STORAGE_KEYS.SESSION_UNLOCKED) === 'true') {
+  // 1. 检查会话级临时解锁标记（仅存在于当前会话或内存，关闭页面失效）
+  if (isSessionUnlocked()) {
     return false;
   }
 
-  // 2. 检查持久化过期时间
+  // 2. 检查持久化过期时间（仅在勾选记住设备时生效）
   const unlockedUntil = Number(safeGetItem(STORAGE_KEYS.UNLOCKED_UNTIL));
   if (unlockedUntil && unlockedUntil > Date.now()) {
     return false;
@@ -173,16 +205,20 @@ export async function verifyPassword(inputPwd) {
 /**
  * 解锁站点
  * @param {object} options
- * @param {number} [options.rememberDays=7] 记住天数，0 表示仅本次浏览器会话有效
+ * @param {number} [options.rememberDays=7] 记住天数，0 表示仅本次浏览器会话有效（不写入 localStorage）
  */
 export function unlockSite({ rememberDays = 7 } = {}) {
+  // 确保清理 localStorage 中可能残留的 session 键
+  safeRemoveItem(STORAGE_KEYS.SESSION_UNLOCKED);
+
   if (rememberDays > 0) {
     const expiry = Date.now() + rememberDays * 24 * 60 * 60 * 1000;
     safeSetItem(STORAGE_KEYS.UNLOCKED_UNTIL, String(expiry));
-    safeRemoveItem(STORAGE_KEYS.SESSION_UNLOCKED);
+    setSessionUnlocked(false);
   } else {
-    safeSetItem(STORAGE_KEYS.SESSION_UNLOCKED, 'true');
+    // 未选择记住设备：清除持久化时间，仅置位当前会话
     safeRemoveItem(STORAGE_KEYS.UNLOCKED_UNTIL);
+    setSessionUnlocked(true);
   }
   notifyListeners();
 }
@@ -193,6 +229,7 @@ export function unlockSite({ rememberDays = 7 } = {}) {
 export function lockSite() {
   safeRemoveItem(STORAGE_KEYS.UNLOCKED_UNTIL);
   safeRemoveItem(STORAGE_KEYS.SESSION_UNLOCKED);
+  setSessionUnlocked(false);
   notifyListeners();
 }
 
