@@ -116,6 +116,7 @@ export function buildAllCommands(helpers = {}) {
     openTerminal = () => {},
     triggerMatrix = () => {},
     exportBackup = () => {},
+    lockSite = () => {},
     closePalette = () => {}
   } = helpers;
 
@@ -134,6 +135,19 @@ export function buildAllCommands(helpers = {}) {
       action: () => {
         toggleTheme();
         closePalette();
+      }
+    },
+    {
+      id: 'act-lock',
+      title: '立即锁定网站 (Lock Screen)',
+      subtitle: '锁住当前网页，需输入访问密码方可继续访问',
+      category: '系统动作',
+      icon: '🔒',
+      keywords: ['lock', 'suo', 'suoding', 'password', 'mima', 'screen', 'security', 'fangwen'],
+      shortcutHint: '安全动作',
+      action: () => {
+        closePalette();
+        lockSite();
       }
     },
     {
@@ -338,8 +352,8 @@ export function getDefaultCommands(allCommands, recentIds = null) {
     });
   }
 
-  // 推荐：3 个高频系统动作 + 5 款代表性小工具
-  const topActionIds = ['act-theme', 'act-settings', 'act-backup'];
+  // 推荐：高频系统动作 + 5 款代表性小工具
+  const topActionIds = ['act-theme', 'act-lock', 'act-settings', 'act-backup'];
   const topToolIds = ['tool-diff', 'tool-cron', 'tool-json', 'tool-timestamp', 'tool-scratchpad'];
 
   const actions = allCommands.filter((c) => topActionIds.includes(c.id));

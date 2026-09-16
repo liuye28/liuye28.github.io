@@ -10,6 +10,7 @@ import {
 } from '../utils/commandPaletteIndex.js';
 import { exportBackup } from '../utils/backupManager.js';
 import { safeSetJSON } from '../utils/storage.js';
+import { lockSite } from '../utils/siteLock.js';
 import './CommandPalette.css';
 
 /**
@@ -78,6 +79,7 @@ export default function CommandPalette() {
         }
       },
       exportBackup: () => exportBackup(),
+      lockSite: () => lockSite(),
       closePalette: () => setIsOpen(false)
     }),
     [navigate, handleToggleTheme]

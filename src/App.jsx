@@ -30,6 +30,7 @@ import WebTerminal from './components/WebTerminal';
 import ErrorBoundary from './components/ErrorBoundary';
 import PwaUpdateToast from './components/PwaUpdateToast';
 import CommandPalette from './components/CommandPalette';
+import SiteLockScreen from './components/SiteLockScreen';
 
 /**
  * Apple 极简优雅路由过渡骨架
@@ -127,6 +128,8 @@ export default function App() {
       <PwaUpdateToast />
       {/* 全局 Raycast 式命令面板浮层 */}
       <CommandPalette />
+      {/* 全局网站访问保护锁屏 */}
+      <SiteLockScreen />
     </HashRouter>
   );
 }

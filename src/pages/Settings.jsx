@@ -12,6 +12,14 @@ import {
   resetFactoryData,
   formatBytes
 } from '../utils/backupManager';
+import {
+  isLockEnabled,
+  setLockEnabled,
+  lockSite,
+  hasCustomPassword,
+  changePassword,
+  resetPasswordToDefault
+} from '../utils/siteLock';
 import './Settings.css';
 
 /**
@@ -43,6 +51,15 @@ export default function Settings() {
   // 危险出厂重置二次防误触弹窗
   const [resetModalOpen, setResetModalOpen] = useState(false);
   const [resetConfirmInput, setResetConfirmInput] = useState('');
+
+  // 站点访问保护锁状态
+  const [siteLockActive, setSiteLockActive] = useState(() => isLockEnabled());
+  const [isCustomPwd, setIsCustomPwd] = useState(() => hasCustomPassword());
+  const [changePwdModalOpen, setChangePwdModalOpen] = useState(false);
+  const [oldPwdInput, setOldPwdInput] = useState('');
+  const [newPwdInput, setNewPwdInput] = useState('');
+  const [confirmPwdInput, setConfirmPwdInput] = useState('');
+  const [pwdError, setPwdError] = useState('');
 
   const fileInputRef = useRef(null);
 
@@ -186,6 +203,57 @@ export default function Settings() {
     showFeedback('已将全站数据恢复至出厂状态');
   };
 
+  // 6. 站点访问锁操作
+  const handleToggleLock = (e) => {
+    const nextVal = e.target.checked;
+    setLockEnabled(nextVal);
+    setSiteLockActive(nextVal);
+    showFeedback(nextVal ? '🔒 站点访问锁已开启（密码保护生效）' : '🔓 站点访问锁已停用（公开访问）');
+  };
+
+  const handleImmediateLock = () => {
+    lockSite();
+  };
+
+  const handleOpenChangePwd = () => {
+    setOldPwdInput('');
+    setNewPwdInput('');
+    setConfirmPwdInput('');
+    setPwdError('');
+    setChangePwdModalOpen(true);
+  };
+
+  const handleExecuteChangePwd = async (e) => {
+    if (e) e.preventDefault();
+    setPwdError('');
+
+    if (!newPwdInput.trim()) {
+      setPwdError('新密码不能为空');
+      return;
+    }
+    if (newPwdInput !== confirmPwdInput) {
+      setPwdError('两次输入的新密码不一致');
+      return;
+    }
+
+    const res = await changePassword(oldPwdInput, newPwdInput);
+    if (res.success) {
+      setIsCustomPwd(true);
+      setChangePwdModalOpen(false);
+      showFeedback('🎉 网站访问密码已成功更新！');
+    } else {
+      setPwdError(res.error || '修改密码失败，请核对原密码');
+    }
+  };
+
+  const handleResetDefaultPwd = () => {
+    if (window.confirm('确定要恢复默认访问密码（520）吗？')) {
+      resetPasswordToDefault();
+      setIsCustomPwd(false);
+      showFeedback('已成功恢复默认密码 (520)');
+    }
+  };
+
   return (
     <main className="apple-home-wrapper">
       <div className="apple-home-content">
@@ -285,7 +353,74 @@ export default function Settings() {
           </section>
 
           {/* =================================================================
-              卡片 2：本地存储用量分析 (Storage Inspector)
+              卡片 2：站点访问锁与隐私防护 (Site Security & Lock)
+              ================================================================= */}
+          <section className="settings-card">
+            <div className="settings-card-header">
+              <div>
+                <div className="settings-card-title-group">
+                  <span className="settings-card-icon">🔐</span>
+                  <h3 className="settings-card-title">站点访问锁与隐私防护</h3>
+                </div>
+                <p className="settings-card-desc">
+                  开启后访客必须输入访问密码才能浏览本站；基于浏览器原生 SHA-256 安全哈希比对
+                </p>
+              </div>
+            </div>
+
+            <div className="pwa-status-pill-group">
+              <span className={`pwa-status-badge ${siteLockActive ? 'ready' : ''}`}>
+                <span className="pwa-dot" /> {siteLockActive ? '访问锁生效中 (已保护)' : '访问锁已停用 (公开浏览)'}
+              </span>
+              <span className="pwa-status-badge">
+                🔑 密码状态：{isCustomPwd ? '已配置自定义密码' : '默认初始密码 (520)'}
+              </span>
+            </div>
+
+            <div style={{ margin: '1rem 0', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', fontSize: '0.92rem', color: 'var(--text-primary)' }}>
+                <input
+                  type="checkbox"
+                  checked={siteLockActive}
+                  onChange={handleToggleLock}
+                  style={{ width: '18px', height: '18px', accentColor: 'var(--accent-color)' }}
+                />
+                <span>启用整站访问密码保护屏障</span>
+              </label>
+            </div>
+
+            <div className="settings-action-row">
+              <button
+                type="button"
+                onClick={handleImmediateLock}
+                className="settings-btn settings-btn-primary"
+                title="立即锁定当前页面，测试解锁屏幕"
+              >
+                🔒 立即锁定测试
+              </button>
+
+              <button
+                type="button"
+                onClick={handleOpenChangePwd}
+                className="settings-btn settings-btn-secondary"
+              >
+                ✏️ 修改访问密码
+              </button>
+
+              {isCustomPwd && (
+                <button
+                  type="button"
+                  onClick={handleResetDefaultPwd}
+                  className="settings-btn settings-btn-secondary"
+                >
+                  ↺ 恢复默认密码 (520)
+                </button>
+              )}
+            </div>
+          </section>
+
+          {/* =================================================================
+              卡片 3：本地存储用量分析 (Storage Inspector)
               ================================================================= */}
           <section className="settings-card">
             <div className="settings-card-header">
@@ -588,6 +723,86 @@ export default function Settings() {
                   确认清空并重置
                 </button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* =================================================================
+            模态弹窗 3：修改站点访问密码
+            ================================================================= */}
+        {changePwdModalOpen && (
+          <div className="modal-backdrop" role="dialog" aria-modal="true">
+            <div className="modal-card">
+              <div className="modal-header">
+                <h3>修改站点访问密码</h3>
+                <p>
+                  请输入当前原密码，并设置新的访问密码。修改成功后新密码即刻生效。
+                </p>
+              </div>
+
+              <form onSubmit={handleExecuteChangePwd} style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                    原密码（初次默认为 520）：
+                  </label>
+                  <input
+                    type="password"
+                    value={oldPwdInput}
+                    onChange={(e) => setOldPwdInput(e.target.value)}
+                    placeholder="请输入当前原密码"
+                    className="danger-confirm-input"
+                    autoFocus
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                    新访问密码：
+                  </label>
+                  <input
+                    type="password"
+                    value={newPwdInput}
+                    onChange={(e) => setNewPwdInput(e.target.value)}
+                    placeholder="请输入新密码"
+                    className="danger-confirm-input"
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.84rem', color: 'var(--text-secondary)', marginBottom: '0.35rem' }}>
+                    再次确认新密码：
+                  </label>
+                  <input
+                    type="password"
+                    value={confirmPwdInput}
+                    onChange={(e) => setConfirmPwdInput(e.target.value)}
+                    placeholder="请再次输入新密码"
+                    className="danger-confirm-input"
+                  />
+                </div>
+
+                {pwdError && (
+                  <div style={{ color: '#ff453a', fontSize: '0.84rem' }}>
+                    ⚠️ {pwdError}
+                  </div>
+                )}
+
+                <div className="modal-actions" style={{ marginTop: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => setChangePwdModalOpen(false)}
+                    className="settings-btn settings-btn-secondary"
+                  >
+                    取消
+                  </button>
+                  <button
+                    type="submit"
+                    className="settings-btn settings-btn-primary"
+                  >
+                    确认修改密码
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         )}
