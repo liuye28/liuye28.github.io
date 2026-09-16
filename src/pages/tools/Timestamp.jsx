@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 
 /**
@@ -84,8 +85,8 @@ export default function Timestamp() {
   const [dateResult, setDateResult] = useState(null);
   const [dateError, setDateError] = useState('');
 
-  // 复制状态
-  const [copiedKey, setCopiedKey] = useState(null);
+  // 复制状态 (基于 useCopyToClipboard 统一管理)
+  const [copiedKey, copy] = useCopyToClipboard(1500);
 
   // 每秒更新当前时间戳
   useEffect(() => {
@@ -157,13 +158,6 @@ export default function Timestamp() {
     });
   }, [inputDateStr]);
 
-  const copyToClipboard = (text, key) => {
-    navigator.clipboard.writeText(String(text)).then(() => {
-      setCopiedKey(key);
-      setTimeout(() => setCopiedKey(null), 1500);
-    });
-  };
-
   const fillCurrentTimestamp = () => {
     setInputTs(String(Math.floor(Date.now() / 1000)));
   };
@@ -202,7 +196,7 @@ export default function Timestamp() {
             <button
               type="button"
               className={`apple-copy-btn ${copiedKey === 'now-sec' ? 'copied' : ''}`}
-              onClick={() => copyToClipboard(Math.floor(currentNow / 1000), 'now-sec')}
+              onClick={() => copy(Math.floor(currentNow / 1000), 'now-sec')}
             >
               {copiedKey === 'now-sec' ? '已复制' : '复制'}
             </button>
@@ -214,7 +208,7 @@ export default function Timestamp() {
             <button
               type="button"
               className={`apple-copy-btn ${copiedKey === 'now-ms' ? 'copied' : ''}`}
-              onClick={() => copyToClipboard(currentNow, 'now-ms')}
+              onClick={() => copy(currentNow, 'now-ms')}
             >
               {copiedKey === 'now-ms' ? '已复制' : '复制'}
             </button>
@@ -226,7 +220,7 @@ export default function Timestamp() {
             <button
               type="button"
               className={`apple-copy-btn ${copiedKey === 'now-msk' ? 'copied' : ''}`}
-              onClick={() => copyToClipboard(formatMoscowTime(new Date(currentNow)), 'now-msk')}
+              onClick={() => copy(formatMoscowTime(new Date(currentNow)), 'now-msk')}
             >
               {copiedKey === 'now-msk' ? '已复制' : '复制'}
             </button>
@@ -238,7 +232,7 @@ export default function Timestamp() {
             <button
               type="button"
               className={`apple-copy-btn ${copiedKey === 'now-local' ? 'copied' : ''}`}
-              onClick={() => copyToClipboard(formatDateTime(new Date(currentNow)), 'now-local')}
+              onClick={() => copy(formatDateTime(new Date(currentNow)), 'now-local')}
             >
               {copiedKey === 'now-local' ? '已复制' : '复制'}
             </button>
@@ -294,7 +288,7 @@ export default function Timestamp() {
               <button
                 type="button"
                 className={`apple-copy-btn ${copiedKey === 'ts-local' ? 'copied' : ''}`}
-                onClick={() => copyToClipboard(tsResult.local, 'ts-local')}
+                onClick={() => copy(tsResult.local, 'ts-local')}
               >
                 {copiedKey === 'ts-local' ? '已复制' : '复制'}
               </button>
@@ -305,7 +299,7 @@ export default function Timestamp() {
               <button
                 type="button"
                 className={`apple-copy-btn ${copiedKey === 'ts-msk' ? 'copied' : ''}`}
-                onClick={() => copyToClipboard(tsResult.msk, 'ts-msk')}
+                onClick={() => copy(tsResult.msk, 'ts-msk')}
               >
                 {copiedKey === 'ts-msk' ? '已复制' : '复制'}
               </button>
@@ -316,7 +310,7 @@ export default function Timestamp() {
               <button
                 type="button"
                 className={`apple-copy-btn ${copiedKey === 'ts-rel' ? 'copied' : ''}`}
-                onClick={() => copyToClipboard(tsResult.relative, 'ts-rel')}
+                onClick={() => copy(tsResult.relative, 'ts-rel')}
               >
                 {copiedKey === 'ts-rel' ? '已复制' : '复制'}
               </button>
@@ -327,7 +321,7 @@ export default function Timestamp() {
               <button
                 type="button"
                 className={`apple-copy-btn ${copiedKey === 'ts-utc' ? 'copied' : ''}`}
-                onClick={() => copyToClipboard(tsResult.utc, 'ts-utc')}
+                onClick={() => copy(tsResult.utc, 'ts-utc')}
               >
                 {copiedKey === 'ts-utc' ? '已复制' : '复制'}
               </button>
@@ -338,7 +332,7 @@ export default function Timestamp() {
               <button
                 type="button"
                 className={`apple-copy-btn ${copiedKey === 'ts-iso' ? 'copied' : ''}`}
-                onClick={() => copyToClipboard(tsResult.iso, 'ts-iso')}
+                onClick={() => copy(tsResult.iso, 'ts-iso')}
               >
                 {copiedKey === 'ts-iso' ? '已复制' : '复制'}
               </button>
@@ -391,7 +385,7 @@ export default function Timestamp() {
               <button
                 type="button"
                 className={`apple-copy-btn ${copiedKey === 'd-sec' ? 'copied' : ''}`}
-                onClick={() => copyToClipboard(dateResult.seconds, 'd-sec')}
+                onClick={() => copy(dateResult.seconds, 'd-sec')}
               >
                 {copiedKey === 'd-sec' ? '已复制' : '复制'}
               </button>
@@ -402,7 +396,7 @@ export default function Timestamp() {
               <button
                 type="button"
                 className={`apple-copy-btn ${copiedKey === 'd-ms' ? 'copied' : ''}`}
-                onClick={() => copyToClipboard(dateResult.milliseconds, 'd-ms')}
+                onClick={() => copy(dateResult.milliseconds, 'd-ms')}
               >
                 {copiedKey === 'd-ms' ? '已复制' : '复制'}
               </button>

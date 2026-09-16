@@ -101,6 +101,7 @@
   | `nav` | 返回网站导航首页 |
   | `cheatsheet` | 直达技术速查备忘录 |
   | `about` | 直达关于我页面 |
+  | `settings` | 直达系统设置与数据中心页面 |
   | `theme <dark\|light>` | 快速切换全局外观主题（如 `theme dark`） |
   | `date` | 查看本地时间与莫斯科时区时间 (MSK / UTC+3) |
   | `matrix` | 触发全屏黑客帝国数字雨动态彩蛋（按 `ESC` 或点击屏幕退出） |

@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import ToolLayout from '../../components/ToolLayout';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 
 /**
@@ -28,7 +29,7 @@ function isValidForBase(str, base) {
 export default function BaseConvert() {
   const [sourceBase, setSourceBase] = useState(10);
   const [inputValue, setInputValue] = useState('2026');
-  const [copiedBase, setCopiedBase] = useState(null);
+  const [copiedBase, copy] = useCopyToClipboard(1500);
 
   // 转换计算逻辑 (使用 BigInt 防止大数字精度溢出)
   const { results, error } = useMemo(() => {
@@ -75,13 +76,6 @@ export default function BaseConvert() {
       };
     }
   }, [inputValue, sourceBase]);
-
-  const copyResult = (text, baseName) => {
-    navigator.clipboard.writeText(text).then(() => {
-      setCopiedBase(baseName);
-      setTimeout(() => setCopiedBase(null), 1500);
-    });
-  };
 
   const handlePreset = (num, base) => {
     setSourceBase(base);
@@ -190,7 +184,7 @@ export default function BaseConvert() {
             <button
               type="button"
               className={`apple-copy-btn ${copiedBase === 'bin' ? 'copied' : ''}`}
-              onClick={() => results && copyResult(results.bin, 'bin')}
+              onClick={() => results && copy(results.bin, 'bin')}
               disabled={!results}
             >
               {copiedBase === 'bin' ? '已复制' : '复制'}
@@ -209,7 +203,7 @@ export default function BaseConvert() {
             <button
               type="button"
               className={`apple-copy-btn ${copiedBase === 'oct' ? 'copied' : ''}`}
-              onClick={() => results && copyResult(results.oct, 'oct')}
+              onClick={() => results && copy(results.oct, 'oct')}
               disabled={!results}
             >
               {copiedBase === 'oct' ? '已复制' : '复制'}
@@ -228,7 +222,7 @@ export default function BaseConvert() {
             <button
               type="button"
               className={`apple-copy-btn ${copiedBase === 'dec' ? 'copied' : ''}`}
-              onClick={() => results && copyResult(results.dec, 'dec')}
+              onClick={() => results && copy(results.dec, 'dec')}
               disabled={!results}
             >
               {copiedBase === 'dec' ? '已复制' : '复制'}
@@ -247,7 +241,7 @@ export default function BaseConvert() {
             <button
               type="button"
               className={`apple-copy-btn ${copiedBase === 'hex' ? 'copied' : ''}`}
-              onClick={() => results && copyResult(results.hex, 'hex')}
+              onClick={() => results && copy(results.hex, 'hex')}
               disabled={!results}
             >
               {copiedBase === 'hex' ? '已复制' : '复制'}

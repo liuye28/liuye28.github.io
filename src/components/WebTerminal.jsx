@@ -26,6 +26,14 @@ export default function WebTerminal() {
       setIsOpen((prev) => !prev);
     };
 
+    window.triggerMatrix = () => {
+      setShowMatrix(true);
+      setHistory((prev) => [
+        ...prev,
+        { type: 'system', text: '已启动代码雨特效 (按 ESC 或点击屏幕任意位置退出)' }
+      ]);
+    };
+
     const handleKeyDown = (e) => {
       if (e.key === '`' && !['INPUT', 'TEXTAREA'].includes(e.target.tagName)) {
         e.preventDefault();
@@ -43,6 +51,7 @@ export default function WebTerminal() {
     return () => {
       window.removeEventListener('keydown', handleKeyDown);
       delete window.toggleWebTerminal;
+      delete window.triggerMatrix;
     };
   }, [isOpen, showMatrix]);
 

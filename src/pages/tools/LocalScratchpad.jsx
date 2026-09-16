@@ -55,6 +55,14 @@ export default function LocalScratchpad() {
   const [activeId, setActiveId] = useState(() => (notes[0] ? notes[0].id : null));
   const [searchWord, setSearchWord] = useState('');
   const [copied, copy] = useCopyToClipboard();
+  const [importError, setImportError] = useState('');
+
+  // 导入异常提示 4 秒后自动淡出
+  useEffect(() => {
+    if (!importError) return;
+    const timer = setTimeout(() => setImportError(''), 4000);
+    return () => clearTimeout(timer);
+  }, [importError]);
 
   // 本地存储自动保存
   useEffect(() => {
@@ -133,6 +141,7 @@ export default function LocalScratchpad() {
   const handleImport = (e) => {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
+    setImportError('');
     const reader = new FileReader();
     reader.onload = (evt) => {
       try {
@@ -140,12 +149,15 @@ export default function LocalScratchpad() {
         if (Array.isArray(imported)) {
           setNotes(imported);
           if (imported.length > 0) setActiveId(imported[0].id);
+        } else {
+          setImportError('导入失败：无效的 JSON 便签文件格式');
         }
       } catch {
-        alert('导入失败：无效的 JSON 便签文件格式');
+        setImportError('导入失败：无效的 JSON 便签文件格式');
       }
     };
     reader.readAsText(file);
+    e.target.value = '';
   };
 
   const handleCopyContent = () => {
@@ -227,6 +239,43 @@ export default function LocalScratchpad() {
               </div>
             )}
           </div>
+
+          {/* 导入错误提示条 */}
+          {importError && (
+            <div
+              className="apple-error-box"
+              style={{
+                marginTop: '0.75rem',
+                marginBottom: '0.25rem',
+                padding: '0.5rem 0.75rem',
+                fontSize: '0.75rem',
+                alignItems: 'center'
+              }}
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ width: 14, height: 14, marginTop: 0 }}>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </svg>
+              <span style={{ flex: 1, wordBreak: 'break-all' }}>{importError}</span>
+              <button
+                type="button"
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'inherit',
+                  cursor: 'pointer',
+                  padding: '0 2px',
+                  lineHeight: 1,
+                  fontSize: '1rem'
+                }}
+                onClick={() => setImportError('')}
+                title="关闭"
+              >
+                ×
+              </button>
+            </div>
+          )}
 
           {/* 备份与恢复 */}
           <div style={{ marginTop: '1rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border-subtle)', display: 'flex', gap: '0.5rem', justifyContent: 'space-between' }}>
