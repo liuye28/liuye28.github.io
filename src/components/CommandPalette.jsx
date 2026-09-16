@@ -74,8 +74,11 @@ export default function CommandPalette() {
       },
       triggerMatrix: () => {
         if (typeof window !== 'undefined') {
-          // 打开终端并执行代码雨
-          window.toggleWebTerminal?.();
+          if (typeof window.triggerMatrix === 'function') {
+            window.triggerMatrix();
+          } else {
+            window.toggleWebTerminal?.();
+          }
         }
       },
       exportBackup: () => exportBackup(),

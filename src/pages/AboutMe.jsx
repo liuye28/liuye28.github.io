@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Header from '../components/Header';
 import usePageTitle from '../hooks/usePageTitle';
 import AboutHero from '../components/about/AboutHero';
-import UsesSection from '../components/about/UsesSection';
 import ReadingSection from '../components/about/ReadingSection';
 import LabSection from '../components/about/LabSection';
 import { safeGetItem, safeSetItem } from '../utils/storage';
@@ -12,13 +11,12 @@ import './AboutMe.css';
  * 分段控制器选项卡配置
  */
 const TABS = [
-  { id: 'uses', label: '极客装备', icon: '🖥️' },
   { id: 'reading', label: '在读书单', icon: '📚' },
   { id: 'lab', label: '创意实验室', icon: '🧪' }
 ];
 
 const STORAGE_KEY = 'about_active_tab';
-const VALID_TABS = ['uses', 'reading', 'lab'];
+const VALID_TABS = ['reading', 'lab'];
 
 /**
  * 关于我页面 (Apple HIG 极客空间与创意实验室)
@@ -26,10 +24,10 @@ const VALID_TABS = ['uses', 'reading', 'lab'];
 export default function AboutMe() {
   usePageTitle('关于我 · 极客空间与实验室');
 
-  // 持久化记忆当前选项卡，默认 'uses'
+  // 持久化记忆当前选项卡，默认 'reading'
   const [activeTab, setActiveTab] = useState(() => {
-    const saved = safeGetItem(STORAGE_KEY, 'uses');
-    return VALID_TABS.includes(saved) ? saved : 'uses';
+    const saved = safeGetItem(STORAGE_KEY, 'reading');
+    return VALID_TABS.includes(saved) ? saved : 'reading';
   });
 
   // 药丸滑动指示条样式状态
@@ -124,14 +122,12 @@ export default function AboutMe() {
   // 渲染选中的内容板块
   const renderTabContent = () => {
     switch (activeTab) {
-      case 'uses':
-        return <UsesSection />;
       case 'reading':
         return <ReadingSection />;
       case 'lab':
         return <LabSection />;
       default:
-        return <UsesSection />;
+        return <ReadingSection />;
     }
   };
 

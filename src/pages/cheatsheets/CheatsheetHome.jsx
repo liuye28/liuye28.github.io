@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { marked } from 'marked';
 import Header from '../../components/Header';
 import usePageTitle from '../../hooks/usePageTitle';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './CheatsheetHome.css';
 
 // 纯静态 Markdown 内容引入 (借助 Vite ?raw 语法，零后端，打包时直接内联)
@@ -84,7 +85,7 @@ const CHEATSHEETS = [
 export default function CheatsheetHome() {
   const [selectedId, setSelectedId] = useState('java');
   const [searchQuery, setSearchQuery] = useState('');
-  const [copied, setCopied] = useState(false);
+  const [copied, copy] = useCopyToClipboard(1500);
 
   // 根据当前选中的技术卡片动态更新标题
   const activeSheet = useMemo(() => CHEATSHEETS.find((s) => s.id === selectedId), [selectedId]);
@@ -116,10 +117,7 @@ export default function CheatsheetHome() {
 
   const handleCopyMarkdown = () => {
     if (!currentSheet) return;
-    navigator.clipboard.writeText(currentSheet.content).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    copy(currentSheet.content);
   };
 
   return (

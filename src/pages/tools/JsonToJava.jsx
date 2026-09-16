@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import ToolLayout from '../../components/ToolLayout';
 import { generateJavaFromJson } from '../../utils/jsonToJava';
+import { useCopyToClipboard } from '../../hooks/useCopyToClipboard';
 import './ToolsCommon.css';
 
 
@@ -75,7 +76,7 @@ export default function JsonToJava() {
   const [useJsonProperty, setUseJsonProperty] = useState(true);
   const [useBigDecimal, setUseBigDecimal] = useState(false);
   const [useSerializable, setUseSerializable] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [copied, copy] = useCopyToClipboard(1500);
 
   // 代码生成计算引擎（抽离至 utils/jsonToJava.js）
   const { javaCode, error, stats } = useMemo(() => {
@@ -105,10 +106,7 @@ export default function JsonToJava() {
 
   const handleCopy = () => {
     if (!javaCode) return;
-    navigator.clipboard.writeText(javaCode).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    });
+    copy(javaCode);
   };
 
   const handleFormatJson = () => {
