@@ -124,7 +124,7 @@ export default function WebTerminal() {
           type: 'output',
           text: `支持的常用命令列表：
   help               - 显示此帮助信息
-  tools              - 列出全部 18 款实用小工具
+  tools              - 列出全部 19 款实用小工具
   open <tool_id>     - 快速直达指定小工具 (如 open ozon-calc, open diff)
   nav                - 返回网站导航首页
   cheatsheet         - 打开极简技术速查备忘录
@@ -142,7 +142,7 @@ export default function WebTerminal() {
         newHistory.push({
           type: 'output',
           text: `可用小工具 ID 列表：
-  [开发] sql-to-pojo, diff, json-to-java, cron, code-pad, timestamp, regex, curl
+  [开发] sql-to-pojo, diff, json-to-java, cron, code-pad, timestamp, regex, curl, ip-check
   [跨境] ozon-rich, ozon-size, ozon-calc
   [编码] json, codec, jwt
   [安全] base-convert, hash
