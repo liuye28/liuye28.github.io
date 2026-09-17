@@ -1,0 +1,651 @@
+/* ==========================================================================
+   IP 纯净度与风险体检 UI 样式 (Apple HIG Bento Grid & Web3 / Clean Theme)
+   ========================================================================== */
+
+/* 搜索与快捷操作区 */
+.ip-search-section {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+  transition: var(--transition-normal);
+}
+
+.ip-search-form {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.ip-input-wrapper {
+  position: relative;
+  flex: 1;
+  min-width: 240px;
+}
+
+.ip-input-icon {
+  position: absolute;
+  left: 0.85rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: var(--text-tertiary);
+  pointer-events: none;
+}
+
+.ip-input-field {
+  padding-left: 2.4rem !important;
+  padding-right: 2rem !important;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+
+.ip-input-clear {
+  position: absolute;
+  right: 0.65rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: var(--bg-hover);
+  color: var(--text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  transition: var(--transition-fast);
+}
+
+.ip-input-clear:hover {
+  background-color: var(--bg-active);
+  color: var(--text-primary);
+}
+
+.ip-action-btns {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+/* 预设与历史快捷标签行 */
+.ip-presets-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px dashed var(--border-subtle);
+}
+
+.ip-presets-label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.ip-preset-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 10px;
+  font-size: 0.775rem;
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  transition: var(--transition-fast);
+  cursor: pointer;
+  user-select: none;
+}
+
+.ip-preset-pill:hover {
+  background-color: var(--accent-light);
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  transform: translateY(-1px);
+}
+
+.ip-preset-pill.active {
+  background-color: var(--accent-light);
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  font-weight: 600;
+}
+
+/* 加载动画态 */
+.ip-loading-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 3.5rem 1.5rem;
+  text-align: center;
+  margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.ip-spinner-radar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 3px solid var(--accent-light);
+  border-top-color: var(--accent-color);
+  animation: ip-spin 0.8s cubic-bezier(0.5, 0.1, 0.5, 0.9) infinite;
+}
+
+@keyframes ip-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.ip-loading-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.ip-loading-desc {
+  font-size: 0.825rem;
+  color: var(--text-secondary);
+  max-width: 420px;
+}
+
+/* 核心评级大卡片 (Apple Hero Card) */
+.ip-hero-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1.6rem 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-bottom: 1.25rem;
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition-normal);
+}
+
+@media (max-width: 780px) {
+  .ip-hero-card {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 1.25rem;
+    gap: 1.25rem;
+  }
+}
+
+.ip-hero-left {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  flex: 1;
+}
+
+.ip-hero-flag {
+  font-size: 3rem;
+  line-height: 1;
+  flex-shrink: 0;
+  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.1));
+}
+
+.ip-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 0;
+}
+
+.ip-hero-ip-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.ip-hero-ip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  line-height: 1.2;
+  word-break: break-all;
+}
+
+@media (max-width: 600px) {
+  .ip-hero-ip {
+    font-size: 1.4rem;
+  }
+}
+
+.ip-hero-location {
+  font-size: 0.925rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.ip-hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.2rem;
+  flex-wrap: wrap;
+}
+
+/* 核心评级徽章与发光光晕 (Glowing Risk Badge) */
+.ip-hero-risk {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  min-width: 240px;
+  max-width: 320px;
+  transition: var(--transition-normal);
+}
+
+@media (max-width: 780px) {
+  .ip-hero-risk {
+    align-items: flex-start;
+    max-width: 100%;
+  }
+}
+
+/* 纯净住宅宽带 (Clean - Emerald Green) */
+.ip-hero-risk--clean {
+  background: linear-gradient(135deg, rgba(52, 199, 89, 0.08) 0%, rgba(52, 199, 89, 0.03) 100%);
+  border-color: rgba(52, 199, 89, 0.3);
+  box-shadow: 0 0 20px rgba(52, 199, 89, 0.12);
+}
+
+.ip-hero-risk--clean .ip-risk-pill {
+  background-color: rgba(52, 199, 89, 0.15);
+  color: #34c759;
+  border: 1px solid rgba(52, 199, 89, 0.35);
+}
+
+.ip-hero-risk--clean .ip-risk-dot {
+  background-color: #34c759;
+  box-shadow: 0 0 8px #34c759;
+}
+
+/* 机房数据中心 (Moderate - Apple Orange / Amber) */
+.ip-hero-risk--moderate {
+  background: linear-gradient(135deg, rgba(255, 149, 0, 0.09) 0%, rgba(255, 149, 0, 0.03) 100%);
+  border-color: rgba(255, 149, 0, 0.3);
+  box-shadow: 0 0 20px rgba(255, 149, 0, 0.12);
+}
+
+.ip-hero-risk--moderate .ip-risk-pill {
+  background-color: rgba(255, 149, 0, 0.15);
+  color: #ff9500;
+  border: 1px solid rgba(255, 149, 0, 0.35);
+}
+
+.ip-hero-risk--moderate .ip-risk-dot {
+  background-color: #ff9500;
+  box-shadow: 0 0 8px #ff9500;
+}
+
+/* 代理中继高危 (High - Crimson Red) */
+.ip-hero-risk--high {
+  background: linear-gradient(135deg, rgba(255, 59, 48, 0.09) 0%, rgba(255, 59, 48, 0.03) 100%);
+  border-color: rgba(255, 59, 48, 0.3);
+  box-shadow: 0 0 20px rgba(255, 59, 48, 0.15);
+}
+
+.ip-hero-risk--high .ip-risk-pill {
+  background-color: rgba(255, 59, 48, 0.15);
+  color: #ff3b30;
+  border: 1px solid rgba(255, 59, 48, 0.35);
+}
+
+.ip-hero-risk--high .ip-risk-dot {
+  background-color: #ff3b30;
+  box-shadow: 0 0 8px #ff3b30;
+}
+
+.ip-risk-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px;
+  border-radius: var(--radius-pill);
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.ip-risk-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: ip-pulse 2s infinite;
+}
+
+@keyframes ip-pulse {
+  0% { transform: scale(0.95); opacity: 0.8; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.95); opacity: 0.8; }
+}
+
+.ip-risk-summary-text {
+  font-size: 0.775rem;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  text-align: right;
+}
+
+@media (max-width: 780px) {
+  .ip-risk-summary-text {
+    text-align: left;
+  }
+}
+
+.ip-risk-badges-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+  justify-content: flex-end;
+}
+
+@media (max-width: 780px) {
+  .ip-risk-badges-row {
+    justify-content: flex-start;
+  }
+}
+
+/* Bento 网格布局 */
+.ip-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 860px) {
+  .ip-bento-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.ip-bento-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 1.35rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  transition: var(--transition-normal);
+}
+
+.ip-bento-card:hover {
+  border-color: var(--border-hover);
+}
+
+.ip-bento-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.ip-bento-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ip-bento-card-icon {
+  width: 20px;
+  height: 20px;
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+/* Bento 行条目 */
+.ip-bento-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  flex: 1;
+}
+
+.ip-data-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.55rem 0.8rem;
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+.ip-data-label {
+  color: var(--text-secondary);
+  font-weight: 500;
+  flex-shrink: 0;
+  min-width: 90px;
+}
+
+.ip-data-value {
+  font-weight: 600;
+  color: var(--text-primary);
+  word-break: break-all;
+  flex: 1;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.ip-mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 0.85rem;
+}
+
+/* 风险与安全特征徽标 */
+.ip-tag-clean {
+  color: #34c759;
+  background-color: rgba(52, 199, 89, 0.12);
+  border: 1px solid rgba(52, 199, 89, 0.25);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.ip-tag-warn {
+  color: #ff9500;
+  background-color: rgba(255, 149, 0, 0.12);
+  border: 1px solid rgba(255, 149, 0, 0.25);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.ip-tag-danger {
+  color: #ff3b30;
+  background-color: rgba(255, 59, 48, 0.12);
+  border: 1px solid rgba(255, 59, 48, 0.25);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* 评级指导提示卡 */
+.ip-advice-box {
+  margin-top: 0.85rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-secondary);
+  border-left: 3px solid var(--accent-color);
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+.ip-advice-box strong {
+  color: var(--text-primary);
+}
+
+/* 外部链接按钮 */
+.ip-ext-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent-color);
+  font-weight: 500;
+  transition: var(--transition-fast);
+}
+
+.ip-ext-link:hover {
+  color: var(--accent-hover);
+  text-decoration: underline;
+}
+
+/* 最近历史记录列表 */
+.ip-history-empty {
+  font-size: 0.825rem;
+  color: var(--text-tertiary);
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.ip-history-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ip-history-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.55rem 0.85rem;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  transition: var(--transition-fast);
+  cursor: pointer;
+}
+
+.ip-history-chip:hover {
+  background-color: var(--bg-hover);
+  border-color: var(--border-hover);
+  transform: translateX(2px);
+}
+
+.ip-history-chip-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ip-history-chip-ip {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.ip-history-chip-loc {
+  font-size: 0.775rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 140px;
+}
+
+/* 原始响应 JSON 折叠区 */
+.ip-raw-section {
+  margin-top: 1rem;
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 0.85rem;
+}
+
+.ip-raw-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  transition: var(--transition-fast);
+  cursor: pointer;
+}
+
+.ip-raw-toggle-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-hover);
+}
+
+.ip-raw-json-container {
+  margin-top: 0.75rem;
+  position: relative;
+}
+
+.ip-raw-json-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.45rem;
+  font-size: 0.775rem;
+  color: var(--text-tertiary);
+}
+
+.ip-raw-json-block {
+  max-height: 240px;
+  overflow-y: auto;
+  font-size: 0.775rem;
+  line-height: 1.5;
+  padding: 0.75rem 0.9rem;
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
