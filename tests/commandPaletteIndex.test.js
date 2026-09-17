@@ -56,6 +56,18 @@ describe('commandPaletteIndex 检索与动作引擎测试', () => {
     const jvmResults = searchCommands('jvm', commands);
     assert.ok(jvmResults.length > 0);
     assert.ok(jvmResults[0].title.includes('JVM'));
+
+    // 搜索 'ip' 应该命中 tool-ip-check
+    const ipResults = searchCommands('ip', commands);
+    assert.ok(ipResults.length > 0);
+    assert.equal(ipResults[0].id, 'tool-ip-check');
+  });
+
+  test('searchCommands 搜索 ip 关键词应准确返回 tool-ip-check', () => {
+    const commands = buildAllCommands(dummyHelpers);
+    const results = searchCommands('ip', commands);
+    assert.ok(results.length > 0, '搜索 ip 应有返回结果');
+    assert.equal(results[0].id, 'tool-ip-check', '首位匹配项应为 tool-ip-check');
   });
 
   test('searchCommands 搜索无匹配时应安全返回空数组', () => {

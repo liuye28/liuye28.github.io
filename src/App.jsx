@@ -20,6 +20,7 @@ const SqlToPojo = lazy(() => import('./pages/tools/SqlToPojo'));
 const DiffViewer = lazy(() => import('./pages/tools/DiffViewer'));
 const JwtDecoder = lazy(() => import('./pages/tools/JwtDecoder'));
 const CurlConverter = lazy(() => import('./pages/tools/CurlConverter'));
+const IpCheck = lazy(() => import('./pages/tools/IpCheck'));
 const OzonProfitCalc = lazy(() => import('./pages/tools/OzonProfitCalc'));
 const LocalScratchpad = lazy(() => import('./pages/tools/LocalScratchpad'));
 const ZenFocus = lazy(() => import('./pages/tools/ZenFocus'));
@@ -108,6 +109,7 @@ export default function App() {
             <Route path="/tools/cron" element={<CronPredictor />} />
             <Route path="/tools/regex" element={<RegexTester />} />
             <Route path="/tools/curl" element={<CurlConverter />} />
+            <Route path="/tools/ip-check" element={<IpCheck />} />
             <Route path="/tools/base-convert" element={<BaseConvert />} />
             <Route path="/tools/codec" element={<Codec />} />
             <Route path="/tools/jwt" element={<JwtDecoder />} />

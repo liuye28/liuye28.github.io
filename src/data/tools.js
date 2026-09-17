@@ -103,6 +103,14 @@ export const tools = [
     iconType: "codec"
   },
   {
+    id: "ip-check",
+    name: "IP 纯净度与风险体检",
+    path: "/tools/ip-check",
+    desc: "纯前端直连探测公网 IP 归属、ISP 运营商、机房托管/原生住宅属性与代理风险评级",
+    category: "开发/调试",
+    iconType: "network"
+  },
+  {
     id: "json",
     name: "JSON 格式化 / 校验器",
     path: "/tools/json",

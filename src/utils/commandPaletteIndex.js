@@ -3,7 +3,7 @@
  *
  * 聚合四大核心领域数据：
  * 1. 系统级快捷动作 (System Actions)
- * 2. 18 款实用离线小工具 (Tools)
+ * 2. 19 款实用离线小工具 (Tools)
  * 3. 7 篇技术速查备忘录与高频实战小节 (Cheatsheets)
  * 4. 程序员精选常用网站导航 (Sites)
  */
@@ -24,6 +24,7 @@ const TOOL_KEYWORDS = {
   'timestamp': ['timestamp', 'shijianchuo', 'unix', 'time', 'date', 'utc'],
   'regex': ['regex', 'zhengze', 'test', 'ce shi', 'match', 'pattern'],
   'curl': ['curl', 'http', 'fetch', 'resttemplate', 'okhttp', 'client'],
+  'ip-check': ['ip', 'ip-check', 'ipcheck', 'chaxun', 'tijian', 'guishu', 'risk', 'proxy', 'hosting', 'jifang', 'zhuzhai', 'asn', 'network', 'chundu'],
   'codec': ['codec', 'base64', 'url', 'bianma', 'jiema', 'utf8'],
   'jwt': ['jwt', 'token', 'decode', 'claim', 'header', 'payload'],
   'base-convert': ['base', 'jinzhi', 'binary', 'hex', 'octal', 'decimal', 'zhuanhuan'],
