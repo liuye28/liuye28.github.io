@@ -126,6 +126,8 @@ export default function WebTerminal() {
   help               - 显示此帮助信息
   tools              - 列出全部 19 款实用小工具
   open <tool_id>     - 快速直达指定小工具 (如 open ozon-calc, open diff)
+  games              - 直达休闲小游戏大厅
+  game <name>        - 快速直达指定小游戏 (snake/2048/minesweeper/memory)
   nav                - 返回网站导航首页
   cheatsheet         - 打开极简技术速查备忘录
   about              - 打开关于我与技术雷达
@@ -136,6 +138,26 @@ export default function WebTerminal() {
   clear              - 清空终端屏幕
   exit               - 关闭终端浮层`
         });
+        break;
+
+      case 'games':
+        navigate('/games');
+        setIsOpen(false);
+        break;
+
+      case 'game':
+        if (!arg) {
+          navigate('/games');
+          setIsOpen(false);
+        } else if (['snake', '2048', 'minesweeper', 'memory'].includes(arg.toLowerCase())) {
+          navigate(`/games/${arg.toLowerCase()}`);
+          setIsOpen(false);
+        } else {
+          newHistory.push({
+            type: 'error',
+            text: `错误: 未知游戏 '${arg}'。有效游戏 ID: snake, 2048, minesweeper, memory`
+          });
+        }
         break;
 
       case 'tools':

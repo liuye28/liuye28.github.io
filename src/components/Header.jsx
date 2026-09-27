@@ -115,6 +115,14 @@ export default function Header() {
           小工具
         </NavLink>
         <NavLink
+          to="/games"
+          className={({ isActive }) =>
+            `header-nav-item ${isActive ? 'active' : ''}`
+          }
+        >
+          小游戏
+        </NavLink>
+        <NavLink
           to="/cheatsheet"
           className={({ isActive }) =>
             `header-nav-item ${isActive ? 'active' : ''}`

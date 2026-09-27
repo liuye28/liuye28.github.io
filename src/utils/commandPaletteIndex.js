@@ -1,11 +1,12 @@
 /**
  * 全局 Command Palette 数据索引与加权检索引擎
  *
- * 聚合四大核心领域数据：
+ * 聚合五大核心领域数据：
  * 1. 系统级快捷动作 (System Actions)
  * 2. 19 款实用离线小工具 (Tools)
- * 3. 7 篇技术速查备忘录与高频实战小节 (Cheatsheets)
- * 4. 程序员精选常用网站导航 (Sites)
+ * 3. 休闲小游戏中心 (Mini Games Hub)
+ * 4. 7 篇技术速查备忘录与高频实战小节 (Cheatsheets)
+ * 5. 程序员精选常用网站导航 (Sites)
  */
 
 import { tools } from '../data/tools.js';
@@ -13,6 +14,55 @@ import { sites } from '../data/sites.js';
 import { safeGetJSON, safeSetJSON } from './storage.js';
 
 export const STORAGE_KEY_RECENTS = 'recent_palette_commands';
+
+// 休闲小游戏快捷条目
+export const GAME_COMMANDS = [
+  {
+    id: 'game-hub',
+    title: '休闲小游戏大厅',
+    subtitle: '4 款经典休闲益智游戏中心与个人战绩',
+    category: '休闲小游戏',
+    icon: '🎮',
+    path: '/games',
+    keywords: ['games', 'game', 'youxi', 'dating', 'xiaoyouxi', 'bento']
+  },
+  {
+    id: 'game-snake',
+    title: '贪吃蛇 (Snake)',
+    subtitle: '经典 60FPS 敏捷贪吃蛇，支持键盘与手势触控',
+    category: '休闲小游戏',
+    icon: '🐍',
+    path: '/games/snake',
+    keywords: ['snake', 'tcs', 'tanchishe', 'she', 'eat', 'apple']
+  },
+  {
+    id: 'game-2048',
+    title: '2048',
+    subtitle: '数字滑动合并益智挑战，支持悔棋撤销与高分持久化',
+    category: '休闲小游戏',
+    icon: '🔢',
+    path: '/games/2048',
+    keywords: ['2048', 'hebing', 'shuzi', 'math', 'slide', 'undo']
+  },
+  {
+    id: 'game-minesweeper',
+    title: '扫雷 (Minesweeper)',
+    subtitle: '经典扫雷，首击必安全机制与自动连片开荒',
+    category: '休闲小游戏',
+    icon: '💣',
+    path: '/games/minesweeper',
+    keywords: ['minesweeper', 'saolei', 'sl', 'mine', 'leiting', 'pailei']
+  },
+  {
+    id: 'game-memory',
+    title: '记忆翻牌 (Memory Match)',
+    subtitle: '极客科技图标 3D 翻牌匹配，锻炼短时记忆',
+    category: '休闲小游戏',
+    icon: '🧩',
+    path: '/games/memory',
+    keywords: ['memory', 'match', 'fanpai', 'jiyi', 'card', '3d', 'pair']
+  }
+];
 
 // 常用工具预置拼音与英文关键词别名字典
 const TOOL_KEYWORDS = {
@@ -236,7 +286,24 @@ export function buildAllCommands(helpers = {}) {
     });
   });
 
-  // 3. 技术速查备忘录
+  // 3. 休闲小游戏
+  GAME_COMMANDS.forEach((game) => {
+    commands.push({
+      id: game.id,
+      title: game.title,
+      subtitle: game.subtitle,
+      category: game.category,
+      icon: game.icon,
+      keywords: game.keywords,
+      shortcutHint: '回车直达',
+      action: () => {
+        navigate(game.path);
+        closePalette();
+      }
+    });
+  });
+
+  // 4. 技术速查备忘录
   CHEATSHEET_ENTRIES.forEach((cs) => {
     commands.push({
       id: cs.id,
@@ -426,7 +493,7 @@ export function searchCommands(query, allCommands, recentIds = null) {
   });
 
   // 按得分从高到低排序；相同得分按分类顺序
-  const categoryOrder = { '系统动作': 1, '实用工具': 2, '技术速查': 3, '常用网站': 4 };
+  const categoryOrder = { '系统动作': 1, '实用工具': 2, '休闲小游戏': 3, '技术速查': 4, '常用网站': 5 };
   scored.sort((a, b) => {
     if (b._score !== a._score) {
       return b._score - a._score;
