@@ -20,7 +20,7 @@ describe('commandPaletteIndex 检索与动作引擎测试', () => {
     closePalette: () => {}
   };
 
-  test('buildAllCommands 应正确聚合四大域数据', () => {
+  test('buildAllCommands 应正确聚合五大域数据 (含休闲小游戏)', () => {
     const commands = buildAllCommands(dummyHelpers);
     assert.ok(commands.length > 25, '命令总数应至少包含工具、动作与速查');
 
