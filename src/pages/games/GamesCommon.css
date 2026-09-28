@@ -526,6 +526,7 @@
 
 .game-flip-card-container {
   perspective: 1000px;
+  -webkit-perspective: 1000px;
   user-select: none;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -536,12 +537,14 @@
   width: 100%;
   height: 100%;
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   border-radius: var(--radius-md);
 }
 
 .game-flip-card-inner.is-flipped {
   transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
 }
 
 .game-flip-card-front,
@@ -563,6 +566,7 @@
   background: var(--bg-surface-secondary);
   border: 1px solid var(--border-subtle);
   transform: rotateY(0deg);
+  -webkit-transform: rotateY(0deg);
   transition: border-color var(--transition-fast), background-color var(--transition-fast);
 }
 
@@ -575,6 +579,7 @@
   background: var(--bg-surface);
   border: 1px solid var(--accent-color);
   transform: rotateY(180deg);
+  -webkit-transform: rotateY(180deg);
   box-shadow: 0 4px 16px var(--accent-light);
 }
 
