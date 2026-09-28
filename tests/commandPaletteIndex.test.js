@@ -20,7 +20,7 @@ describe('commandPaletteIndex 检索与动作引擎测试', () => {
     closePalette: () => {}
   };
 
-  test('buildAllCommands 应正确聚合四大域数据', () => {
+  test('buildAllCommands 应正确聚合五大域数据 (含休闲小游戏)', () => {
     const commands = buildAllCommands(dummyHelpers);
     assert.ok(commands.length > 25, '命令总数应至少包含工具、动作与速查');
 
@@ -29,6 +29,27 @@ describe('commandPaletteIndex 检索与动作引擎测试', () => {
     assert.ok(categories.has('实用工具'));
     assert.ok(categories.has('技术速查'));
     assert.ok(categories.has('常用网站'));
+    assert.ok(categories.has('休闲小游戏'));
+  });
+
+  test('searchCommands 应正确匹配休闲小游戏关键词 (snake, 2048, saolei, memory)', () => {
+    const commands = buildAllCommands(dummyHelpers);
+
+    const snakeResults = searchCommands('snake', commands);
+    assert.ok(snakeResults.length > 0, '搜索 snake 应当有结果');
+    assert.equal(snakeResults[0].id, 'game-snake');
+
+    const game2048Results = searchCommands('2048', commands);
+    assert.ok(game2048Results.length > 0, '搜索 2048 应当有结果');
+    assert.equal(game2048Results[0].id, 'game-2048');
+
+    const saoleiResults = searchCommands('saolei', commands);
+    assert.ok(saoleiResults.length > 0, '搜索 saolei 应当有结果');
+    assert.equal(saoleiResults[0].id, 'game-minesweeper');
+
+    const memoryResults = searchCommands('memory', commands);
+    assert.ok(memoryResults.length > 0, '搜索 memory 应当有结果');
+    assert.equal(memoryResults[0].id, 'game-memory');
   });
 
   test('getDefaultCommands 空状态应返回高频系统动作与常用工具', () => {

@@ -1,0 +1,545 @@
+/* ==========================================================================
+   休闲小游戏中心首页样式体系 (Mini Games Hub - Apple HIG Bento Grid)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. 基础页面结构保障 (Page Wrapper & Content)
+   -------------------------------------------------------------------------- */
+
+.apple-home-wrapper {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 1.5rem 3.5rem 1.5rem;
+  background-color: var(--bg-main);
+  box-sizing: border-box;
+}
+
+.apple-home-content {
+  width: 100%;
+  max-width: 980px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.apple-footer {
+  margin-top: auto;
+  padding: 2.5rem 0 1rem 0;
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--text-tertiary);
+  letter-spacing: -0.01em;
+  user-select: none;
+}
+
+/* --------------------------------------------------------------------------
+   2. Hero 头部展厅区域 (Hero Section)
+   -------------------------------------------------------------------------- */
+
+.games-hero-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 2.25rem 1rem 1.5rem 1rem;
+  user-select: none;
+}
+
+.games-hero-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: var(--radius-pill);
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  font-size: 0.725rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-bottom: 0.85rem;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.games-hero-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.75);
+  animation: games-pulse 2s infinite ease-in-out;
+}
+
+@keyframes games-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(0.85);
+  }
+}
+
+.games-hero-title {
+  font-size: clamp(1.85rem, 4.2vw, 2.45rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
+  margin: 0 0 0.65rem 0;
+  line-height: 1.15;
+}
+
+.games-hero-desc {
+  font-size: clamp(0.925rem, 2vw, 1.05rem);
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem 0;
+  line-height: 1.5;
+  max-width: 600px;
+}
+
+.games-hero-meta-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 0.55rem 1.4rem;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  box-shadow: var(--shadow-sm);
+}
+
+.games-hero-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.games-hero-meta-num {
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--accent-color);
+}
+
+.games-hero-meta-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.games-hero-meta-divider {
+  width: 1px;
+  height: 14px;
+  background-color: var(--border-subtle);
+}
+
+/* --------------------------------------------------------------------------
+   3. Bento Grid 展厅网格 (Apple Bento Grid Layout)
+   -------------------------------------------------------------------------- */
+
+.games-bento-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+  margin: 1.75rem 0 3.5rem 0;
+}
+
+/* --------------------------------------------------------------------------
+   4. Bento 游戏卡片样式 (Game Cards & Theming)
+   -------------------------------------------------------------------------- */
+
+.games-bento-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 1.65rem;
+  background-color: var(--bg-surface);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+  outline: none;
+  box-sizing: border-box;
+  transition: transform 0.28s var(--ease-apple),
+              box-shadow 0.28s var(--ease-apple),
+              border-color 0.28s var(--ease-apple);
+}
+
+.games-bento-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--theme-border-hover);
+  box-shadow: var(--shadow-card-hover), 0 0 28px var(--theme-glow);
+}
+
+.games-bento-card:focus-visible {
+  border-color: var(--theme-color);
+  box-shadow: 0 0 0 3px var(--theme-glow), var(--shadow-card-hover);
+}
+
+/* 柔和角隅背景呼吸高光 (Ambient Corner Glow) */
+.games-card-ambient-glow {
+  position: absolute;
+  top: -45px;
+  right: -45px;
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  background: var(--theme-glow);
+  filter: blur(45px);
+  opacity: 0.65;
+  pointer-events: none;
+  transition: opacity 0.35s var(--ease-apple), transform 0.35s var(--ease-apple);
+}
+
+.games-bento-card:hover .games-card-ambient-glow {
+  opacity: 1;
+  transform: scale(1.18);
+}
+
+/* 卡片头部与图标 */
+.games-card-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 0.95rem;
+  position: relative;
+  z-index: 1;
+}
+
+.games-card-icon-box {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-md);
+  background: var(--theme-glow);
+  border: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.65rem;
+  flex-shrink: 0;
+  box-shadow: inset 0 1px 2px rgba(255, 255, 255, 0.2);
+  transition: transform 0.28s var(--ease-apple);
+}
+
+.games-bento-card:hover .games-card-icon-box {
+  transform: scale(1.08);
+}
+
+.games-card-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.games-card-title-row {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.games-card-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.games-card-subtitle {
+  font-size: 0.725rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* 玩法标签胶囊 */
+.games-card-tags {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.2rem;
+}
+
+.games-card-tag {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.7rem;
+  font-weight: 600;
+  background-color: var(--theme-tag-bg);
+  color: var(--theme-tag-color);
+  letter-spacing: -0.01em;
+  transition: background-color 0.2s var(--ease-apple);
+}
+
+/* 描述文本 */
+.games-card-desc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.55;
+  margin: 0 0 1.2rem 0;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+/* 战绩指标区域 (Realtime Stats Grid) */
+.games-card-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+  gap: 0.65rem;
+  margin-bottom: 1.25rem;
+  padding: 0.75rem 0.95rem;
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
+}
+
+.games-card-stat-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.games-card-stat-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.games-card-stat-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.games-card-stat-value.highlight {
+  color: var(--theme-color);
+}
+
+/* 底部行动栏与开始游戏按钮 */
+.games-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-top: auto;
+  position: relative;
+  z-index: 1;
+}
+
+.games-card-play-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  height: 36px;
+  padding: 0 1.15rem;
+  border-radius: var(--radius-pill);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  background-color: var(--bg-surface-secondary);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-primary);
+  box-sizing: border-box;
+  transition: all 0.25s var(--ease-apple);
+}
+
+.games-play-arrow {
+  width: 15px;
+  height: 15px;
+  transition: transform 0.25s var(--ease-apple);
+}
+
+.games-bento-card:hover .games-card-play-btn,
+.games-card-play-btn:hover {
+  background-color: var(--theme-color);
+  color: #ffffff;
+  border-color: var(--theme-color);
+  box-shadow: 0 4px 14px var(--theme-glow);
+}
+
+.games-bento-card:hover .games-play-arrow,
+.games-card-play-btn:hover .games-play-arrow {
+  transform: translateX(4px);
+}
+
+/* --------------------------------------------------------------------------
+   5. 四款游戏专属配色主题系统 (Vibrant Accent Themes)
+   -------------------------------------------------------------------------- */
+
+/* 贪吃蛇: 翡翠绿 (Emerald) */
+.games-theme-emerald {
+  --theme-color: #10b981;
+  --theme-glow: rgba(16, 185, 129, 0.16);
+  --theme-border-hover: rgba(16, 185, 129, 0.48);
+  --theme-tag-bg: rgba(16, 185, 129, 0.12);
+  --theme-tag-color: #059669;
+}
+
+/* 2048: 琥珀金 (Amber) */
+.games-theme-amber {
+  --theme-color: #f59e0b;
+  --theme-glow: rgba(245, 158, 11, 0.16);
+  --theme-border-hover: rgba(245, 158, 11, 0.48);
+  --theme-tag-bg: rgba(245, 158, 11, 0.12);
+  --theme-tag-color: #d97706;
+}
+
+/* 扫雷: 玫瑰绯红 (Rose) */
+.games-theme-rose {
+  --theme-color: #f43f5e;
+  --theme-glow: rgba(244, 63, 94, 0.16);
+  --theme-border-hover: rgba(244, 63, 94, 0.48);
+  --theme-tag-bg: rgba(244, 63, 94, 0.12);
+  --theme-tag-color: #e11d48;
+}
+
+/* 记忆翻牌: 紫罗兰 / 极客靛蓝 (Violet / Indigo) */
+.games-theme-violet {
+  --theme-color: #8b5cf6;
+  --theme-glow: rgba(139, 92, 246, 0.16);
+  --theme-border-hover: rgba(139, 92, 246, 0.48);
+  --theme-tag-bg: rgba(139, 92, 246, 0.12);
+  --theme-tag-color: #7c3aed;
+}
+
+/* 深色模式适配 */
+html[data-theme='dark'] .games-theme-emerald {
+  --theme-glow: rgba(16, 185, 129, 0.22);
+  --theme-tag-color: #34d399;
+}
+html[data-theme='dark'] .games-theme-amber {
+  --theme-glow: rgba(245, 158, 11, 0.22);
+  --theme-tag-color: #fbbf24;
+}
+html[data-theme='dark'] .games-theme-rose {
+  --theme-glow: rgba(244, 63, 94, 0.22);
+  --theme-tag-color: #fb7185;
+}
+html[data-theme='dark'] .games-theme-violet {
+  --theme-glow: rgba(139, 92, 246, 0.22);
+  --theme-tag-color: #a78bfa;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .games-theme-emerald {
+    --theme-glow: rgba(16, 185, 129, 0.22);
+    --theme-tag-color: #34d399;
+  }
+  :root:not([data-theme='light']) .games-theme-amber {
+    --theme-glow: rgba(245, 158, 11, 0.22);
+    --theme-tag-color: #fbbf24;
+  }
+  :root:not([data-theme='light']) .games-theme-rose {
+    --theme-glow: rgba(244, 63, 94, 0.22);
+    --theme-tag-color: #fb7185;
+  }
+  :root:not([data-theme='light']) .games-theme-violet {
+    --theme-glow: rgba(139, 92, 246, 0.22);
+    --theme-tag-color: #a78bfa;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   6. 响应式布局优化 (Mobile & Tablet Responsive)
+   -------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+  .games-hero-section {
+    padding: 1.75rem 0.5rem 1.25rem 0.5rem;
+  }
+
+  .games-hero-meta-row {
+    gap: 0.9rem;
+    padding: 0.45rem 1.1rem;
+  }
+
+  .games-bento-grid {
+    gap: 1.25rem;
+    margin: 1.5rem 0 3rem 0;
+  }
+
+  .games-bento-card {
+    padding: 1.35rem;
+  }
+}
+
+@media (max-width: 680px) {
+  .apple-home-wrapper {
+    padding: 0 1rem 2.5rem 1rem;
+  }
+
+  .games-hero-desc {
+    font-size: 0.9rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .games-hero-meta-row {
+    width: 100%;
+    justify-content: space-around;
+    padding: 0.45rem 0.75rem;
+  }
+
+  .games-hero-meta-item {
+    gap: 0.35rem;
+  }
+
+  .games-hero-meta-num {
+    font-size: 0.875rem;
+  }
+
+  .games-hero-meta-label {
+    font-size: 0.75rem;
+  }
+
+  /* 移动端强制单列 */
+  .games-bento-grid {
+    grid-template-columns: 1fr;
+    gap: 1.15rem;
+    margin: 1.25rem 0 2.5rem 0;
+  }
+
+  .games-card-icon-box {
+    width: 44px;
+    height: 44px;
+    font-size: 1.45rem;
+  }
+
+  .games-card-title {
+    font-size: 1.15rem;
+  }
+
+  .games-card-desc {
+    font-size: 0.825rem;
+  }
+
+  .games-card-stat-value {
+    font-size: 0.95rem;
+  }
+}

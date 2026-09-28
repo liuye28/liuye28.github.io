@@ -27,6 +27,13 @@ const ZenFocus = lazy(() => import('./pages/tools/ZenFocus'));
 const AboutMe = lazy(() => import('./pages/AboutMe'));
 const Settings = lazy(() => import('./pages/Settings'));
 
+// 休闲小游戏中心按需动态懒加载
+const GamesHome = lazy(() => import('./pages/games/GamesHome'));
+const SnakeGame = lazy(() => import('./pages/games/SnakeGame'));
+const Game2048 = lazy(() => import('./pages/games/Game2048'));
+const MinesweeperGame = lazy(() => import('./pages/games/MinesweeperGame'));
+const MemoryMatchGame = lazy(() => import('./pages/games/MemoryMatchGame'));
+
 import WebTerminal from './components/WebTerminal';
 import ErrorBoundary from './components/ErrorBoundary';
 import PwaUpdateToast from './components/PwaUpdateToast';
@@ -84,6 +91,13 @@ export default function App() {
 
             {/* 小工具板块首页 */}
             <Route path="/tools" element={<ToolsHome />} />
+
+            {/* 休闲小游戏中心 */}
+            <Route path="/games" element={<GamesHome />} />
+            <Route path="/games/snake" element={<SnakeGame />} />
+            <Route path="/games/2048" element={<Game2048 />} />
+            <Route path="/games/minesweeper" element={<MinesweeperGame />} />
+            <Route path="/games/memory" element={<MemoryMatchGame />} />
 
             {/* 技术速查备忘录 */}
             <Route path="/cheatsheet" element={<CheatsheetHome />} />
