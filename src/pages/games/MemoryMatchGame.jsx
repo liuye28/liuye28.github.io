@@ -510,7 +510,9 @@ export default function MemoryMatchGame() {
                   ref={(el) => (cardElementsRef.current[index] = el)}
                   className={`game-flip-card-container memory-card-item ${
                     card.isMatched ? 'is-matched' : ''
-                  } ${isJustMatched ? 'just-matched' : ''}`}
+                  } ${isJustMatched ? 'just-matched' : ''} ${
+                    isCardFlipped ? 'is-flipped-card' : ''
+                  }`}
                   onClick={() => handleCardClick(index)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') {
@@ -788,6 +790,12 @@ export default function MemoryMatchGame() {
           aspect-ratio: 1 / 1;
           outline: none;
           border-radius: var(--radius-md);
+          position: relative;
+          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .memory-card-item.is-flipped-card {
+          z-index: 5;
         }
 
         .memory-card-item:focus-visible {
@@ -796,6 +804,10 @@ export default function MemoryMatchGame() {
 
         .memory-card-item.is-matched {
           cursor: default;
+        }
+
+        .memory-card-item:not(.is-matched):hover {
+          transform: translateY(-2px);
         }
 
         /* 刚匹配成功的高光脉冲 */
@@ -817,24 +829,30 @@ export default function MemoryMatchGame() {
 
         /* 卡片背面 (未翻开) */
         .memory-card-cover {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
           background: var(--bg-surface-secondary);
           border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-md);
           box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           cursor: pointer;
-          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
-                      border-color 0.2s ease,
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+          transform: rotateY(0deg);
+          -webkit-transform: rotateY(0deg);
+          transition: border-color 0.2s ease,
                       box-shadow 0.2s ease;
-          position: relative;
         }
 
         .memory-card-item:not(.is-matched):hover .memory-card-cover {
           border-color: var(--accent-color);
           box-shadow: 0 6px 16px var(--accent-light);
-          transform: translateY(-2px);
         }
 
         .memory-cover-pattern {
@@ -871,13 +889,21 @@ export default function MemoryMatchGame() {
 
         /* 卡片正面 (翻开图案) */
         .memory-card-revealed {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
           background: var(--bg-surface);
           border: 1px solid var(--border-subtle);
+          border-radius: var(--radius-md);
           display: flex;
           align-items: center;
           justify-content: center;
-          position: relative;
           box-shadow: var(--shadow-sm);
+          -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+          transform: rotateY(180deg);
+          -webkit-transform: rotateY(180deg);
         }
 
         .memory-card-symbol {
