@@ -20,7 +20,7 @@ export const GAME_COMMANDS = [
   {
     id: 'game-hub',
     title: '休闲小游戏大厅',
-    subtitle: '4 款经典休闲益智游戏中心与个人战绩',
+    subtitle: '7 款经典休闲益智游戏中心与个人战绩',
     category: '休闲小游戏',
     icon: '🎮',
     path: '/games',
@@ -61,6 +61,33 @@ export const GAME_COMMANDS = [
     icon: '🧩',
     path: '/games/memory',
     keywords: ['memory', 'match', 'fanpai', 'jiyi', 'card', '3d', 'pair']
+  },
+  {
+    id: 'game-tetris',
+    title: '俄罗斯方块 (Tetris)',
+    subtitle: '经典 60FPS 消除，支持 Hold 暂存与 SRS 旋转踢墙',
+    category: '休闲小游戏',
+    icon: '🧱',
+    path: '/games/tetris',
+    keywords: ['tetris', 'eluosi', 'fangkuai', 'fk', 'els']
+  },
+  {
+    id: 'game-gomoku',
+    title: '五子棋 (Gomoku)',
+    subtitle: '经典 15×15 棋盘人机对弈，Minimax 智能 AI 与悔棋',
+    category: '休闲小游戏',
+    icon: '♟️',
+    path: '/games/gomoku',
+    keywords: ['gomoku', 'wuziqi', 'wzq', 'chess', 'qilei']
+  },
+  {
+    id: 'game-sudoku',
+    title: '数独 (Sudoku)',
+    subtitle: '经典 9×9 逻辑数独，唯一解题目生成与候选笔记模式',
+    category: '休闲小游戏',
+    icon: '🔢',
+    path: '/games/sudoku',
+    keywords: ['sudoku', 'shudu', 'sd', 'math', 'shuzi']
   }
 ];
 

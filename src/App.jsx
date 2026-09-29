@@ -33,6 +33,9 @@ const SnakeGame = lazy(() => import('./pages/games/SnakeGame'));
 const Game2048 = lazy(() => import('./pages/games/Game2048'));
 const MinesweeperGame = lazy(() => import('./pages/games/MinesweeperGame'));
 const MemoryMatchGame = lazy(() => import('./pages/games/MemoryMatchGame'));
+const TetrisGame = lazy(() => import('./pages/games/TetrisGame'));
+const GomokuGame = lazy(() => import('./pages/games/GomokuGame'));
+const SudokuGame = lazy(() => import('./pages/games/SudokuGame'));
 
 import WebTerminal from './components/WebTerminal';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -98,6 +101,9 @@ export default function App() {
             <Route path="/games/2048" element={<Game2048 />} />
             <Route path="/games/minesweeper" element={<MinesweeperGame />} />
             <Route path="/games/memory" element={<MemoryMatchGame />} />
+            <Route path="/games/tetris" element={<TetrisGame />} />
+            <Route path="/games/gomoku" element={<GomokuGame />} />
+            <Route path="/games/sudoku" element={<SudokuGame />} />
 
             {/* 技术速查备忘录 */}
             <Route path="/cheatsheet" element={<CheatsheetHome />} />
