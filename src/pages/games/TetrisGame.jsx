@@ -458,14 +458,15 @@ export default function TetrisGame() {
     if (!piece) return;
 
     const currentType = piece.type;
-    canHoldRef.current = false;
-    setCanHold(false);
 
     if (holdRef.current === null) {
       holdRef.current = currentType;
       setHoldPiece(currentType);
       const success = spawnNextPiece(boardRef.current);
-      if (!success) handleGameOver();
+      if (!success) {
+        handleGameOver();
+        return;
+      }
     } else {
       const prevHold = holdRef.current;
       holdRef.current = currentType;
@@ -484,6 +485,14 @@ export default function TetrisGame() {
         rotation: 0,
       };
     }
+
+    // 确保无论首次暂存还是换块均在本回合锁定 Hold，防止首回合连续触发两次暂存
+    canHoldRef.current = false;
+    setCanHold(false);
+
+    // 重置下落计时器，确保新方块获得完整的一个重力下落周期
+    lastDropTimeRef.current = performance.now();
+
     gameAudio.playMove();
   }, [handleGameOver, spawnNextPiece]);
 
