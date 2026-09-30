@@ -32,7 +32,7 @@ describe('commandPaletteIndex 检索与动作引擎测试', () => {
     assert.ok(categories.has('休闲小游戏'));
   });
 
-  test('searchCommands 应正确匹配休闲小游戏关键词 (snake, 2048, saolei, memory)', () => {
+  test('searchCommands 应正确匹配休闲小游戏关键词 (含 tetris, gomoku, sudoku)', () => {
     const commands = buildAllCommands(dummyHelpers);
 
     const snakeResults = searchCommands('snake', commands);
@@ -50,6 +50,31 @@ describe('commandPaletteIndex 检索与动作引擎测试', () => {
     const memoryResults = searchCommands('memory', commands);
     assert.ok(memoryResults.length > 0, '搜索 memory 应当有结果');
     assert.equal(memoryResults[0].id, 'game-memory');
+
+    // 新增三大游戏检索验证
+    const tetrisResults = searchCommands('tetris', commands);
+    assert.ok(tetrisResults.length > 0, '搜索 tetris 应当有结果');
+    assert.equal(tetrisResults[0].id, 'game-tetris');
+
+    const eluosiResults = searchCommands('eluosi', commands);
+    assert.ok(eluosiResults.length > 0, '搜索 eluosi 应当有结果');
+    assert.equal(eluosiResults[0].id, 'game-tetris');
+
+    const gomokuResults = searchCommands('gomoku', commands);
+    assert.ok(gomokuResults.length > 0, '搜索 gomoku 应当有结果');
+    assert.equal(gomokuResults[0].id, 'game-gomoku');
+
+    const wuziqiResults = searchCommands('wuziqi', commands);
+    assert.ok(wuziqiResults.length > 0, '搜索 wuziqi 应当有结果');
+    assert.equal(wuziqiResults[0].id, 'game-gomoku');
+
+    const sudokuResults = searchCommands('sudoku', commands);
+    assert.ok(sudokuResults.length > 0, '搜索 sudoku 应当有结果');
+    assert.equal(sudokuResults[0].id, 'game-sudoku');
+
+    const shuduResults = searchCommands('shudu', commands);
+    assert.ok(shuduResults.length > 0, '搜索 shudu 应当有结果');
+    assert.equal(shuduResults[0].id, 'game-sudoku');
   });
 
   test('getDefaultCommands 空状态应返回高频系统动作与常用工具', () => {

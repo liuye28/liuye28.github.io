@@ -108,12 +108,94 @@ const GAME_CONFIGS = [
       },
     ],
   },
+  {
+    id: 'tetris',
+    title: '俄罗斯方块',
+    subtitle: 'Classic Tetris',
+    path: '/games/tetris',
+    icon: '🧱',
+    theme: 'cyan',
+    tags: ['经典消除', 'SRS旋转', '7-Bag'],
+    desc: '纯正经典 60FPS 消除挑战，支持 SRS 旋转踢墙系统、7-Bag 随机器、Hold 暂存与幽灵落点投影。',
+    formatStats: (rec) => [
+      {
+        label: '最高得分',
+        value: rec?.bestScore ?? 0,
+        highlight: (rec?.bestScore || 0) > 0,
+      },
+      {
+        label: '最多消行',
+        value: rec?.maxLines > 0 ? `${rec.maxLines} 行` : '--',
+        highlight: (rec?.maxLines || 0) > 0,
+      },
+      {
+        label: '游玩次数',
+        value: `${rec?.playCount ?? 0} 次`,
+      },
+    ],
+  },
+  {
+    id: 'gomoku',
+    title: '五子棋人机',
+    subtitle: 'Gomoku AI Battle',
+    path: '/games/gomoku',
+    icon: '♟️',
+    theme: 'indigo',
+    tags: ['人机博弈', '3级AI', '悔棋支持'],
+    desc: '经典 15×15 棋盘人机对弈，内置简单/中等/困难 3 级启发式智能 AI 与无限步悔棋支持。',
+    formatStats: (rec) => [
+      {
+        label: '战胜AI',
+        value: `${rec?.wins ?? 0} 胜`,
+        highlight: (rec?.wins || 0) > 0,
+      },
+      {
+        label: '总局数',
+        value: `${(rec?.wins || 0) + (rec?.losses || 0)} 局`,
+      },
+      {
+        label: '游玩次数',
+        value: `${rec?.playCount ?? 0} 次`,
+      },
+    ],
+  },
+  {
+    id: 'sudoku',
+    title: '数独',
+    subtitle: 'Classic Sudoku',
+    path: '/games/sudoku',
+    icon: '🔢',
+    theme: 'orange',
+    tags: ['逻辑演算', '候选笔记', '实时冲突'],
+    desc: '经典 9×9 逻辑数独，唯一解题目回溯生成，支持候选笔记模式、实时冲突高亮与三档难度。',
+    formatStats: (rec) => [
+      {
+        label: '初级最快',
+        value: rec?.easyBestTime != null ? `${rec.easyBestTime}s` : '--',
+        highlight: rec?.easyBestTime != null,
+      },
+      {
+        label: '中级最快',
+        value: rec?.mediumBestTime != null ? `${rec.mediumBestTime}s` : '--',
+        highlight: rec?.mediumBestTime != null,
+      },
+      {
+        label: '高级最快',
+        value: rec?.hardBestTime != null ? `${rec.hardBestTime}s` : '--',
+        highlight: rec?.hardBestTime != null,
+      },
+      {
+        label: '游玩次数',
+        value: `${rec?.playCount ?? 0} 次`,
+      },
+    ],
+  },
 ];
 
 /**
  * 休闲小游戏中心大厅页面组件 (GamesHome)
  *
- * 遵循 Apple HIG Bento Grid 设计哲学，展示 4 款经典益智游戏的专属渐变光泽、
+ * 遵循 Apple HIG Bento Grid 设计哲学，展示 7 款经典益智游戏的专属渐变光泽、
  * 图标、玩法标签与实时战绩，支持悬停微动效与平滑路由跳转。
  */
 export default function GamesHome() {
@@ -134,7 +216,10 @@ export default function GamesHome() {
       (records.snake?.playCount || 0) +
       (records.game2048?.playCount || 0) +
       (records.minesweeper?.playCount || 0) +
-      (records.memory?.playCount || 0)
+      (records.memory?.playCount || 0) +
+      (records.tetris?.playCount || 0) +
+      (records.gomoku?.playCount || 0) +
+      (records.sudoku?.playCount || 0)
     );
   }, [records]);
 
@@ -152,12 +237,12 @@ export default function GamesHome() {
           </div>
           <h2 className="games-hero-title">休闲小游戏中心</h2>
           <p className="games-hero-desc">
-            4 款经典益智游戏 · 纯前端免安装 · 战绩本地保存
+            7 款经典益智游戏 · 纯前端免安装 · 战绩本地保存
           </p>
 
           <div className="games-hero-meta-row" aria-label="游戏中心统计">
             <div className="games-hero-meta-item">
-              <span className="games-hero-meta-num">4</span>
+              <span className="games-hero-meta-num">7</span>
               <span className="games-hero-meta-label">款独立游戏</span>
             </div>
             <div className="games-hero-meta-divider" aria-hidden="true" />

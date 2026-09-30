@@ -7,15 +7,17 @@ const DEFAULT_RECORDS = {
   game2048: { bestScore: 0, maxTile: 0, playCount: 0 },
   minesweeper: { bestTimeBeginner: null, bestTimeIntermediate: null, playCount: 0 },
   memory: { bestTurns: null, bestTime: null, playCount: 0 },
+  tetris: { bestScore: 0, maxLines: 0, playCount: 0 },
+  gomoku: { wins: 0, losses: 0, playCount: 0 },
+  sudoku: { easyBestTime: null, mediumBestTime: null, hardBestTime: null, playCount: 0 },
 };
 
 function createDefaultRecords() {
-  return {
-    snake: { ...DEFAULT_RECORDS.snake },
-    game2048: { ...DEFAULT_RECORDS.game2048 },
-    minesweeper: { ...DEFAULT_RECORDS.minesweeper },
-    memory: { ...DEFAULT_RECORDS.memory },
-  };
+  const result = {};
+  for (const [key, value] of Object.entries(DEFAULT_RECORDS)) {
+    result[key] = { ...value };
+  }
+  return result;
 }
 
 export function getRecords() {
@@ -23,12 +25,11 @@ export function getRecords() {
   if (!data || typeof data !== 'object') {
     return createDefaultRecords();
   }
-  return {
-    snake: { ...DEFAULT_RECORDS.snake, ...data.snake },
-    game2048: { ...DEFAULT_RECORDS.game2048, ...data.game2048 },
-    minesweeper: { ...DEFAULT_RECORDS.minesweeper, ...data.minesweeper },
-    memory: { ...DEFAULT_RECORDS.memory, ...data.memory },
-  };
+  const result = {};
+  for (const [key, value] of Object.entries(DEFAULT_RECORDS)) {
+    result[key] = { ...value, ...(data[key] || {}) };
+  }
+  return result;
 }
 
 export function getGameRecord(gameKey) {
@@ -68,6 +69,28 @@ export function updateRecord(gameKey, payload = {}) {
     }
     if (typeof time === 'number' && time > 0) {
       target.bestTime = target.bestTime === null ? time : Math.min(target.bestTime, time);
+    }
+  } else if (gameKey === 'tetris') {
+    const { score = 0, lines = 0 } = payload;
+    target.bestScore = Math.max(target.bestScore || 0, score);
+    target.maxLines = Math.max(target.maxLines || 0, lines);
+  } else if (gameKey === 'gomoku') {
+    const { isWin } = payload;
+    if (isWin) {
+      target.wins = (target.wins || 0) + 1;
+    } else {
+      target.losses = (target.losses || 0) + 1;
+    }
+  } else if (gameKey === 'sudoku') {
+    const { level, time } = payload;
+    if (typeof time === 'number' && time > 0) {
+      if (level === 'easy') {
+        target.easyBestTime = target.easyBestTime === null ? time : Math.min(target.easyBestTime, time);
+      } else if (level === 'medium') {
+        target.mediumBestTime = target.mediumBestTime === null ? time : Math.min(target.mediumBestTime, time);
+      } else if (level === 'hard') {
+        target.hardBestTime = target.hardBestTime === null ? time : Math.min(target.hardBestTime, time);
+      }
     }
   }
 
